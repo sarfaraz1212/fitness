@@ -16,6 +16,13 @@ export interface LoginData {
   };
 }
 
+export interface CreateClientData {
+  createClient: {
+    id: string;
+    name: string;
+  };
+}
+
 export const LOGIN_MUTATION = gql`
   mutation Login($input: LoginUserInput!) {
     login(input: $input) {
@@ -28,6 +35,14 @@ export const LOGIN_MUTATION = gql`
         is_verified
         is_onboarded
       }
+    }
+  }
+`;
+
+export const CREATE_CLIENT_MUTATION = gql`
+  mutation Mutation($input: CreateClientInput!) {
+    createClient(input: $input) {
+      name
     }
   }
 `;

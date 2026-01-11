@@ -29,6 +29,7 @@ const Login = () => {
         description: `Welcome back, ${data.login.user.name}!`,
       });
 
+      
       if (data.login.user.role === "TRAINER") {
         navigate("/trainer");
         return;

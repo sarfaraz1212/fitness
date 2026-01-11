@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { ApolloProvider } from "@apollo/client/react";
 import { client } from '@/lib/apollo';
-import Index from "./pages/Index";
+import CreateOnboarding from "./pages/client/onboarding/Create";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import TrainerDashboard from "./pages/TrainerDashboard";
@@ -29,7 +29,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/onboarding" element={<Index />} />
+            <Route path="/onboarding" element={<CreateOnboarding />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/trainer" element={<ProtectedRoute><TrainerDashboard /></ProtectedRoute>} />
 
