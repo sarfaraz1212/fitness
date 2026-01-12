@@ -1,19 +1,28 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  User, Heart, Activity, Ruler, Scale, Moon, Cigarette, Wine, 
-  Clock, Briefcase, Camera, FileText, Sparkles, Check, ArrowRight, X
+import React, { useState, useMemo } from 'react';
+import {
+  Sparkles, Check, ArrowRight
 } from 'lucide-react';
-import GenderComponent from '@/components/onboarding/GenderComponent';
-import BloodGroup from '@/components/onboarding/BloodGroup';
-import DietPreferences from '@/components/onboarding/DietPreferences';
-import FitnessGoal from '@/components/onboarding/FitnessGoal';
-import FitnessLevel from '@/components/onboarding/FitnessLevel';
-import StressLevel from '@/components/onboarding/StressLevel';
-import PreferredTrainingTime from '@/components/onboarding/PreferredTrainingTime';
-import FormSection from '@/components/onboarding/FormSection';
-import { toast } from '@/hooks/use-toast';
+import { z } from 'zod';
 
-// Calculate age from DOB
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
+import PersonalInformation from './steps/PersonalInformation';
+import BodyMetrics from './steps/BodyMetrics';
+import DietGoals from './steps/DietGoals';
+import ActivityLifestyle from './steps/ActivityLifestyle';
+import AdditionalInformation from './steps/AdditionalInformation';
+import {
+  personalInformationSchema,
+  bodyMetricsSchema,
+  dietGoalsSchema,
+  activityLifestyleSchema,
+  additionalInformationSchema,
+} from './validations/onboardingValidation';
+import { CREATE_ONBOARDING_MUTATION } from '@/graphql/mutations';
+import { type CreateOnboardingData } from '@/graphql/types';
+import { useMutation } from '@apollo/client/react';
+
+
 const calculateAge = (dob: string): number => {
   if (!dob) return 0;
   const birthDate = new Date(dob);
@@ -27,6 +36,12 @@ const calculateAge = (dob: string): number => {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') || '';
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 5;
+
   const [formData, setFormData] = useState({
     dob: '',
     gender: '',
@@ -57,6 +72,25 @@ const Index = () => {
   // Auto-calculate age from DOB
   const calculatedAge = useMemo(() => calculateAge(formData.dob), [formData.dob]);
 
+  const [createOnboardingMutation] = useMutation<CreateOnboardingData>(CREATE_ONBOARDING_MUTATION, {
+    onCompleted: () => {
+      toast({
+        title: "Onboarding Complete! 🎉",
+        description: "Your profile has been saved successfully.",
+      });
+      setIsSubmitting(false);
+      navigate('/login');
+    },
+    onError: (error) => {
+      toast({
+        title: "Submission failed",
+        description: error.message || "Failed to save your profile. Please try again.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+    },
+  });
+
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -72,6 +106,7 @@ const Index = () => {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
@@ -95,59 +130,85 @@ const Index = () => {
     setProfilePreview(null);
   };
 
-  const validateForm = (): boolean => {
+  const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.dob) newErrors.dob = 'Date of birth is required';
-    else if (calculatedAge < 13) newErrors.dob = 'You must be at least 13 years old';
-    else if (calculatedAge > 120) newErrors.dob = 'Please enter a valid date of birth';
-
-    if (!formData.gender) newErrors.gender = 'Gender is required';
-    if (!formData.bloodGroup) newErrors.bloodGroup = 'Blood group is required';
-    if (!formData.dietPreference) newErrors.dietPreference = 'Diet preference is required';
-    
-    if (formData.fitnessGoals.length === 0) {
-      newErrors.fitnessGoals = 'Please select at least one fitness goal';
+    try {
+      if (step === 1) {
+        personalInformationSchema.parse({
+          dob: formData.dob,
+          gender: formData.gender,
+          bloodGroup: formData.bloodGroup,
+        });
+      } else if (step === 2) {
+        bodyMetricsSchema.parse({
+          weight: formData.weight,
+          height: formData.height,
+          bodyFat: formData.bodyFat,
+          bmi: formData.bmi,
+        });
+      } else if (step === 3) {
+        dietGoalsSchema.parse({
+          dietPreference: formData.dietPreference,
+          fitnessGoals: formData.fitnessGoals,
+        });
+      } else if (step === 4) {
+        activityLifestyleSchema.parse({
+          fitnessLevel: formData.fitnessLevel,
+          exerciseFrequency: formData.exerciseFrequency,
+          sleepHours: formData.sleepHours,
+          stressLevel: formData.stressLevel,
+          trainingTime: formData.trainingTime,
+          smokingFrequency: formData.smokingFrequency,
+          alcoholFrequency: formData.alcoholFrequency,
+          workEnvironment: formData.workEnvironment,
+        });
+      } else if (step === 5) {
+        additionalInformationSchema.parse({
+          medicalConditions: formData.medicalConditions,
+          notes: formData.notes,
+        });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        error.errors.forEach((err) => {
+          const path = err.path.join('.');
+          newErrors[path] = err.message;
+        });
+      }
     }
-
-    if (!formData.weight) newErrors.weight = 'Weight is required';
-    else if (parseFloat(formData.weight) < 20 || parseFloat(formData.weight) > 300) {
-      newErrors.weight = 'Weight must be between 20 and 300 kg';
-    }
-
-    if (!formData.height) newErrors.height = 'Height is required';
-    else if (parseFloat(formData.height) < 100 || parseFloat(formData.height) > 250) {
-      newErrors.height = 'Height must be between 100 and 250 cm';
-    }
-
-    if (formData.bodyFat && (parseFloat(formData.bodyFat) < 3 || parseFloat(formData.bodyFat) > 60)) {
-      newErrors.bodyFat = 'Body fat must be between 3% and 60%';
-    }
-
-    if (formData.bmi && (parseFloat(formData.bmi) < 10 || parseFloat(formData.bmi) > 50)) {
-      newErrors.bmi = 'BMI must be between 10 and 50';
-    }
-
-    if (!formData.fitnessLevel) newErrors.fitnessLevel = 'Fitness level is required';
-
-    if (formData.exerciseFrequency && (parseInt(formData.exerciseFrequency) < 0 || parseInt(formData.exerciseFrequency) > 14)) {
-      newErrors.exerciseFrequency = 'Exercise frequency must be between 0 and 14 times per week';
-    }
-
-    if (formData.sleepHours && (parseFloat(formData.sleepHours) < 1 || parseFloat(formData.sleepHours) > 16)) {
-      newErrors.sleepHours = 'Sleep hours must be between 1 and 16';
-    }
-
-    if (!formData.stressLevel) newErrors.stressLevel = 'Stress level is required';
-    if (!formData.trainingTime) newErrors.trainingTime = 'Preferred training time is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateForm = (): boolean => {
+    for (let i = 1; i <= totalSteps; i++) {
+      if (!validateStep(i)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const convertImageToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to convert image to base64'));
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast({
         title: "Please fix the errors",
@@ -158,16 +219,74 @@ const Index = () => {
     }
 
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast({
-      title: "Onboarding Complete! 🎉",
-      description: "Your profile has been saved successfully.",
-    });
-    
-    setIsSubmitting(false);
+
+    try {
+      // Convert image to base64 if present
+      let profileImageBase64: string | undefined;
+      if (profileImage) {
+        profileImageBase64 = await convertImageToBase64(profileImage);
+      }
+
+      // Prepare input data with proper type conversions
+      const input = {
+        token: token,
+        dob: formData.dob,
+        age: calculatedAge,
+        gender: formData.gender,
+        bloodGroup: formData.bloodGroup,
+        dietPreference: formData.dietPreference,
+        fitnessGoals: formData.fitnessGoals,
+        weight: parseFloat(formData.weight),
+        height: parseFloat(formData.height),
+        bodyFat: formData.bodyFat ? parseFloat(formData.bodyFat) : null,
+        bmi: formData.bmi ? parseFloat(formData.bmi) : null,
+        fitnessLevel: formData.fitnessLevel,
+        stressLevel: formData.stressLevel,
+        exerciseFrequency: formData.exerciseFrequency || null,
+        sleepHours: formData.sleepHours || null,
+        smokingFrequency: formData.smokingFrequency || null,
+        alcoholFrequency: formData.alcoholFrequency || null,
+        trainingTime: formData.trainingTime,
+        workEnvironment: formData.workEnvironment,
+        medicalConditions: formData.medicalConditions || null,
+        notes: formData.notes || null,
+        profileImage: profileImageBase64 || null,
+      };
+
+      console.log(input);
+      await createOnboardingMutation({
+        variables: {
+          input,
+        },
+      });
+    } catch (error) {
+      // Error is handled in onError callback
+      console.error('Error submitting onboarding:', error);
+    }
+  };
+
+  const handleNext = (e?: React.MouseEvent<HTMLButtonElement>) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    if (validateStep(currentStep)) {
+      if (currentStep < totalSteps) {
+        setCurrentStep(currentStep + 1);
+      }
+    } else {
+      toast({
+        title: "Please fix the errors",
+        description: "Some fields need your attention before proceeding.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePrevious = (e?: React.MouseEvent<HTMLButtonElement>) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
   const handleReset = () => {
@@ -195,7 +314,16 @@ const Index = () => {
     setProfileImage(null);
     setProfilePreview(null);
     setErrors({});
+    setCurrentStep(1);
   };
+
+  const stepTitles = [
+    'Personal Information',
+    'Body Metrics',
+    'Diet & Goals',
+    'Activity & Lifestyle',
+    'Additional Information'
+  ];
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
@@ -214,365 +342,148 @@ const Index = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information */}
-          <FormSection title="Personal Information" subtitle="Basic details about you" icon={User}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="form-label">Date of Birth</label>
-                <input
-                  type="date"
-                  name="dob"
-                  value={formData.dob}
-                  onChange={(e) => handleChange('dob', e.target.value)}
-                  className="form-input"
-                  max={new Date().toISOString().split('T')[0]}
-                />
-                {errors.dob && <p className="form-error">{errors.dob}</p>}
-              </div>
-
-              <div>
-                <label className="form-label">Age (Auto-calculated)</label>
-                <input
-                  type="number"
-                  name="age"
-                  value={formData.dob ? calculatedAge : ''}
-                  readOnly
-                  placeholder="Will be calculated from DOB"
-                  className="form-input bg-muted cursor-not-allowed"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Calculated automatically from your date of birth</p>
-              </div>
-
-              <GenderComponent 
-                value={formData.gender} 
-                onChange={(v) => handleChange('gender', v)}
-                error={errors.gender}
-              />
-
-              <BloodGroup 
-                value={formData.bloodGroup} 
-                onChange={(v) => handleChange('bloodGroup', v)}
-                error={errors.bloodGroup}
-              />
-            </div>
-          </FormSection>
-
-          {/* Body Metrics */}
-          <FormSection title="Body Metrics" subtitle="Your physical measurements" icon={Ruler}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="form-label flex items-center gap-2">
-                  <Scale className="w-4 h-4 text-primary" />
-                  Weight (kg)
-                </label>
-                <input
-                  type="number"
-                  name="weight"
-                  placeholder="e.g., 70"
-                  value={formData.weight}
-                  onChange={(e) => handleChange('weight', e.target.value)}
-                  className="form-input"
-                  min="20"
-                  max="300"
-                />
-                {errors.weight && <p className="form-error">{errors.weight}</p>}
-              </div>
-
-              <div>
-                <label className="form-label flex items-center gap-2">
-                  <Ruler className="w-4 h-4 text-primary" />
-                  Height (cm)
-                </label>
-                <input
-                  type="number"
-                  name="height"
-                  placeholder="e.g., 175"
-                  value={formData.height}
-                  onChange={(e) => handleChange('height', e.target.value)}
-                  className="form-input"
-                  min="100"
-                  max="250"
-                />
-                {errors.height && <p className="form-error">{errors.height}</p>}
-              </div>
-
-              <div>
-                <label className="form-label">Body Fat Percentage (%)</label>
-                <input
-                  type="number"
-                  name="bodyFat"
-                  placeholder="e.g., 18"
-                  value={formData.bodyFat}
-                  onChange={(e) => handleChange('bodyFat', e.target.value)}
-                  className="form-input"
-                  min="3"
-                  max="60"
-                />
-                {errors.bodyFat && <p className="form-error">{errors.bodyFat}</p>}
-              </div>
-
-              <div>
-                <label className="form-label">BMI</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  name="bmi"
-                  placeholder="e.g., 22.5"
-                  value={formData.bmi}
-                  onChange={(e) => handleChange('bmi', e.target.value)}
-                  className="form-input"
-                  min="10"
-                  max="50"
-                />
-                {errors.bmi && <p className="form-error">{errors.bmi}</p>}
-              </div>
-            </div>
-          </FormSection>
-
-          {/* Diet & Goals */}
-          <FormSection title="Diet & Goals" subtitle="Your nutrition and fitness objectives" icon={Heart}>
-            <div className="space-y-6">
-              <DietPreferences 
-                value={formData.dietPreference} 
-                onChange={(v) => handleChange('dietPreference', v)}
-                error={errors.dietPreference}
-              />
-              
-              <FitnessGoal 
-                value={formData.fitnessGoals} 
-                onChange={handleFitnessGoalChange}
-                error={errors.fitnessGoals}
-              />
-            </div>
-          </FormSection>
-
-          {/* Activity & Lifestyle */}
-          <FormSection title="Activity & Lifestyle" subtitle="Your daily habits and routines" icon={Activity}>
-            <div className="space-y-6">
-              <FitnessLevel 
-                value={formData.fitnessLevel} 
-                onChange={(v) => handleChange('fitnessLevel', v)}
-                error={errors.fitnessLevel}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="form-label flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-primary" />
-                    Exercise Frequency (per week)
-                  </label>
-                  <input
-                    type="number"
-                    name="exerciseFrequency"
-                    placeholder="e.g., 4"
-                    value={formData.exerciseFrequency}
-                    onChange={(e) => handleChange('exerciseFrequency', e.target.value)}
-                    className="form-input"
-                    min="0"
-                    max="14"
-                  />
-                  {errors.exerciseFrequency && <p className="form-error">{errors.exerciseFrequency}</p>}
-                </div>
-
-                <div>
-                  <label className="form-label flex items-center gap-2">
-                    <Moon className="w-4 h-4 text-primary" />
-                    Sleep Hours (per day)
-                  </label>
-                  <input
-                    type="number"
-                    name="sleepHours"
-                    placeholder="e.g., 7"
-                    value={formData.sleepHours}
-                    onChange={(e) => handleChange('sleepHours', e.target.value)}
-                    className="form-input"
-                    min="1"
-                    max="16"
-                  />
-                  {errors.sleepHours && <p className="form-error">{errors.sleepHours}</p>}
-                </div>
-
-                <div>
-                  <label className="form-label flex items-center gap-2">
-                    <Cigarette className="w-4 h-4 text-muted-foreground" />
-                    Smoking Frequency
-                  </label>
-                  <select
-                    name="smokingFrequency"
-                    value={formData.smokingFrequency}
-                    onChange={(e) => handleChange('smokingFrequency', e.target.value)}
-                    className="form-select"
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            {stepTitles.map((title, index) => (
+              <div key={index + 1} className="flex items-center flex-1">
+                <div className="flex flex-col items-center flex-1">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${currentStep > index + 1
+                      ? 'bg-primary text-primary-foreground'
+                      : currentStep === index + 1
+                        ? 'bg-primary text-primary-foreground ring-4 ring-primary/20'
+                        : 'bg-muted text-muted-foreground'
+                      }`}
                   >
-                    <option value="">Select Frequency</option>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="occasionally">Occasionally</option>
-                    <option value="never">Never</option>
-                  </select>
-                  {errors.smokingFrequency && <p className="form-error">{errors.smokingFrequency}</p>}
-                </div>
-
-                <div>
-                  <label className="form-label flex items-center gap-2">
-                    <Wine className="w-4 h-4 text-muted-foreground" />
-                    Alcohol Consumption
-                  </label>
-                  <select
-                    name="alcoholFrequency"
-                    value={formData.alcoholFrequency}
-                    onChange={(e) => handleChange('alcoholFrequency', e.target.value)}
-                    className="form-select"
-                  >
-                    <option value="">Select Frequency</option>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="occasionally">Occasionally</option>
-                    <option value="never">Never</option>
-                  </select>
-                  {errors.alcoholFrequency && <p className="form-error">{errors.alcoholFrequency}</p>}
-                </div>
-              </div>
-
-              <StressLevel 
-                value={formData.stressLevel} 
-                onChange={(v) => handleChange('stressLevel', v)}
-                error={errors.stressLevel}
-              />
-
-              <PreferredTrainingTime 
-                value={formData.trainingTime} 
-                onChange={(v) => handleChange('trainingTime', v)}
-                error={errors.trainingTime}
-              />
-
-              <div>
-                <label className="form-label flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-primary" />
-                  Work Environment
-                </label>
-                <select
-                  name="workEnvironment"
-                  value={formData.workEnvironment}
-                  onChange={(e) => handleChange('workEnvironment', e.target.value)}
-                  className="form-select"
-                >
-                  <option value="">Select Environment</option>
-                  <option value="desk">Desk Job (Sedentary)</option>
-                  <option value="active">Active Job (Physical work)</option>
-                  <option value="mixed">Mixed (Some desk, some movement)</option>
-                  <option value="remote">Remote / Work from home</option>
-                </select>
-                {errors.workEnvironment && <p className="form-error">{errors.workEnvironment}</p>}
-              </div>
-            </div>
-          </FormSection>
-
-          {/* Additional Information */}
-          <FormSection title="Additional Information" subtitle="Any other details we should know" icon={FileText}>
-            <div className="space-y-6">
-              <div>
-                <label className="form-label flex items-center gap-2">
-                  <Camera className="w-4 h-4 text-primary" />
-                  Profile Picture
-                </label>
-                
-                {profilePreview ? (
-                  <div className="relative w-32 h-32 mx-auto">
-                    <img 
-                      src={profilePreview} 
-                      alt="Profile preview" 
-                      className="w-full h-full object-cover rounded-full border-4 border-primary/20 shadow-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="absolute -top-2 -right-2 p-1.5 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors shadow-md"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    {currentStep > index + 1 ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      index + 1
+                    )}
                   </div>
-                ) : (
-                  <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer bg-card hover:bg-secondary/30 transition-colors">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <Camera className="w-8 h-8 text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground">
-                          <span className="font-medium text-primary">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-muted-foreground">PNG, JPG up to 10MB</p>
-                      </div>
-                      <input 
-                        type="file" 
-                        name="profile_image" 
-                        className="hidden" 
-                        accept="image/*" 
-                        onChange={handleImageChange}
-                      />
-                    </label>
-                  </div>
+                  <p className={`text-xs mt-2 text-center hidden md:block ${currentStep === index + 1 ? 'text-foreground font-medium' : 'text-muted-foreground'
+                    }`}>
+                    {title}
+                  </p>
+                </div>
+                {index < totalSteps - 1 && (
+                  <div
+                    className={`h-1 flex-1 mx-2 transition-all ${currentStep > index + 1 ? 'bg-primary' : 'bg-muted'
+                      }`}
+                  />
                 )}
-                {errors.profileImage && <p className="form-error text-center mt-2">{errors.profileImage}</p>}
               </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              Step {currentStep} of {totalSteps}: {stepTitles[currentStep - 1]}
+            </p>
+          </div>
+        </div>
 
-              <div>
-                <label className="form-label">Medical Conditions</label>
-                <textarea
-                  name="medicalConditions"
-                  rows={3}
-                  placeholder="Any medical conditions, injuries, or allergies we should be aware of..."
-                  value={formData.medicalConditions}
-                  onChange={(e) => handleChange('medicalConditions', e.target.value)}
-                  className="form-textarea"
-                  maxLength={1000}
-                />
-                {errors.medicalConditions && <p className="form-error">{errors.medicalConditions}</p>}
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Step 1: Personal Information */}
+          {currentStep === 1 && (
+            <PersonalInformation
+              formData={formData}
+              handleChange={handleChange}
+              errors={errors}
+              calculatedAge={calculatedAge}
+            />
+          )}
 
-              <div>
-                <label className="form-label">Notes / Special Instructions</label>
-                <textarea
-                  name="notes"
-                  rows={3}
-                  placeholder="Any additional information or preferences..."
-                  value={formData.notes}
-                  onChange={(e) => handleChange('notes', e.target.value)}
-                  className="form-textarea"
-                  maxLength={1000}
-                />
-                {errors.notes && <p className="form-error">{errors.notes}</p>}
-              </div>
-            </div>
-          </FormSection>
+          {/* Step 2: Body Metrics */}
+          {currentStep === 2 && (
+            <BodyMetrics
+              formData={formData}
+              handleChange={handleChange}
+              errors={errors}
+            />
+          )}
+
+          {/* Step 3: Diet & Goals */}
+          {currentStep === 3 && (
+            <DietGoals
+              formData={formData}
+              handleChange={handleChange}
+              errors={errors}
+              handleFitnessGoalChange={handleFitnessGoalChange}
+            />
+          )}
+
+          {/* Step 4: Activity & Lifestyle */}
+          {currentStep === 4 && (
+            <ActivityLifestyle
+              formData={formData}
+              handleChange={handleChange}
+              errors={errors}
+            />
+          )}
+
+          {/* Step 5: Additional Information */}
+          {currentStep === 5 && (
+            <AdditionalInformation
+              formData={formData}
+              handleChange={handleChange}
+              errors={errors}
+              profilePreview={profilePreview}
+              handleImageChange={handleImageChange}
+              removeImage={removeImage}
+            />
+          )}
 
           {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={handleReset}
-              className="btn-secondary order-2 sm:order-1"
-            >
-              Reset Form
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn-primary flex items-center justify-center gap-2 order-1 sm:order-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  Complete Onboarding
-                  <ArrowRight className="w-4 h-4" />
-                </>
+          <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6 border-t">
+            <div className="flex gap-3">
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePrevious}
+                  className="btn-secondary flex items-center gap-2"
+                >
+                  Previous
+                </button>
               )}
-            </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="btn-secondary"
+              >
+                Reset
+              </button>
+            </div>
+            <div className="flex gap-3">
+              {currentStep < totalSteps ? (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="btn-primary flex items-center justify-center gap-2"
+                >
+                  Next
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn-primary flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      Complete Onboarding
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </form>
       </div>

@@ -38,149 +38,38 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useQuery } from "@tanstack/react-query";
+import { fetchClients } from "@/lib/React-query/queryFunction";
+import TrainerClientStatsComponent from "./components/TrainerClientStatsComponent";
+import TrainerClientSearchComponent from "./components/TrainerClientSearchComponent";
 
-interface Client {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  avatar: string;
-  membershipType: "basic" | "premium" | "vip";
-  status: "active" | "inactive";
-  goals: string[];
-  sessionsCompleted: number;
-  nextSession: string | null;
-  progressPercentage: number;
-  joinedDate: string;
-}
 
-const mockClients: Client[] = [
-  {
-    id: "1",
-    firstName: "Sarah",
-    lastName: "Johnson",
-    email: "sarah.johnson@email.com",
-    phone: "+1 234 567 890",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-    membershipType: "vip",
-    status: "active",
-    goals: ["Weight Loss", "Endurance"],
-    sessionsCompleted: 24,
-    nextSession: "Today, 5:00 PM",
-    progressPercentage: 85,
-    joinedDate: "Jan 15, 2024",
-  },
-  {
-    id: "2",
-    firstName: "Mike",
-    lastName: "Chen",
-    email: "mike.chen@email.com",
-    phone: "+1 234 567 891",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-    membershipType: "premium",
-    status: "active",
-    goals: ["Muscle Gain"],
-    sessionsCompleted: 18,
-    nextSession: "Tomorrow, 10:00 AM",
-    progressPercentage: 72,
-    joinedDate: "Feb 3, 2024",
-  },
-  {
-    id: "3",
-    firstName: "Emma",
-    lastName: "Wilson",
-    email: "emma.wilson@email.com",
-    phone: "+1 234 567 892",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
-    membershipType: "premium",
-    status: "active",
-    goals: ["Flexibility", "Stress Relief"],
-    sessionsCompleted: 16,
-    nextSession: "Wed, 2:00 PM",
-    progressPercentage: 90,
-    joinedDate: "Jan 20, 2024",
-  },
-  {
-    id: "4",
-    firstName: "James",
-    lastName: "Brown",
-    email: "james.brown@email.com",
-    phone: "+1 234 567 893",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
-    membershipType: "basic",
-    status: "active",
-    goals: ["Cardio", "Weight Loss"],
-    sessionsCompleted: 12,
-    nextSession: "Thu, 3:00 PM",
-    progressPercentage: 55,
-    joinedDate: "Mar 1, 2024",
-  },
-  {
-    id: "5",
-    firstName: "Lisa",
-    lastName: "Park",
-    email: "lisa.park@email.com",
-    phone: "+1 234 567 894",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
-    membershipType: "vip",
-    status: "inactive",
-    goals: ["Strength Training"],
-    sessionsCompleted: 30,
-    nextSession: null,
-    progressPercentage: 95,
-    joinedDate: "Dec 10, 2023",
-  },
-  {
-    id: "6",
-    firstName: "David",
-    lastName: "Kim",
-    email: "david.kim@email.com",
-    phone: "+1 234 567 895",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
-    membershipType: "basic",
-    status: "active",
-    goals: ["General Fitness"],
-    sessionsCompleted: 8,
-    nextSession: "Fri, 6:00 PM",
-    progressPercentage: 35,
-    joinedDate: "Mar 15, 2024",
-  },
-];
 
 const Index = () => {
+  const { data: clientsData, isLoading, error } = useQuery({
+    queryKey: ['clients'],
+    queryFn: () => fetchClients()
+  });
+
+  console.log(clientsData);
+
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
 
-  const stats = [
-    { label: "Total Clients", value: mockClients.length, icon: Users, color: "from-blue-500 to-indigo-500" },
-    { label: "Active", value: mockClients.filter(c => c.status === "active").length, icon: UserCheck, color: "from-emerald-500 to-teal-500" },
-    { label: "Inactive", value: mockClients.filter(c => c.status === "inactive").length, icon: UserX, color: "from-amber-500 to-orange-500" },
-    { label: "Avg Progress", value: `${Math.round(mockClients.reduce((acc, c) => acc + c.progressPercentage, 0) / mockClients.length)}%`, icon: TrendingUp, color: "from-purple-500 to-pink-500" },
-  ];
 
-  const filteredClients = mockClients.filter(client => {
-    const matchesSearch = `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = activeFilter === "all" || client.status === activeFilter;
-    return matchesSearch && matchesFilter;
-  });
 
-  const getMembershipBadge = (type: string) => {
-    switch (type) {
-      case "vip":
-        return <Badge className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white border-0 shadow-sm">VIP</Badge>;
-      case "premium":
-        return <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white border-0 shadow-sm">Premium</Badge>;
-      default:
-        return <Badge variant="secondary">Basic</Badge>;
-    }
-  };
 
-  const handleDelete = (client: Client) => {
+
+
+  if (isLoading) return <div className="p-8 text-center">Loading clients...</div>;
+  if (error) return <div className="p-8 text-center text-red-500">Error loading clients</div>;
+
+
+
+  const handleDelete = (client: any) => {
     setClientToDelete(client);
     setDeleteDialogOpen(true);
   };
@@ -222,67 +111,22 @@ const Index = () => {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Stats Row */}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 -mt-12 relative z-10">
-          {stats.map((stat, index) => (
-            <Card key={index} className="border-0 shadow-lg bg-white dark:bg-gray-900">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <TrainerClientStatsComponent />
         </div>
 
-        {/* Search and Filters */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-gray-900">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  placeholder="Search clients by name or email..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-muted/50 border-0 focus-visible:ring-2 focus-visible:ring-primary"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={activeFilter === "all" ? "default" : "outline"}
-                  onClick={() => setActiveFilter("all")}
-                  className={activeFilter === "all" ? "bg-gradient-to-r from-blue-500 to-indigo-600 border-0" : ""}
-                >
-                  All
-                </Button>
-                <Button
-                  variant={activeFilter === "active" ? "default" : "outline"}
-                  onClick={() => setActiveFilter("active")}
-                  className={activeFilter === "active" ? "bg-gradient-to-r from-emerald-500 to-teal-600 border-0" : ""}
-                >
-                  Active
-                </Button>
-                <Button
-                  variant={activeFilter === "inactive" ? "default" : "outline"}
-                  onClick={() => setActiveFilter("inactive")}
-                  className={activeFilter === "inactive" ? "bg-gradient-to-r from-amber-500 to-orange-600 border-0" : ""}
-                >
-                  Inactive
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <TrainerClientSearchComponent
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          activeFilter={activeFilter}
+          setActiveFilter={setActiveFilter}
+        />
 
         {/* Client Grid */}
-        {filteredClients.length > 0 ? (
+        {clientsData?.clients.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredClients.map((client) => (
+            {clientsData?.clients.map((client: any) => (
               <Card
                 key={client.id}
                 className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-900 overflow-hidden cursor-pointer"
@@ -294,7 +138,7 @@ const Index = () => {
                     <div className="absolute top-4 right-4">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button variant="ghost" size="icon" className="opacity-100">
                             <MoreVertical className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -305,7 +149,7 @@ const Index = () => {
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/trainer/clients/${client.id}/edit`); }}>
                             <Pencil className="w-4 h-4 mr-2" /> Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={(e) => { e.stopPropagation(); handleDelete(client); }}
                             className="text-destructive focus:text-destructive"
                           >
@@ -314,28 +158,27 @@ const Index = () => {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    
+
                     <div className="flex items-start gap-4">
                       <div className="relative">
                         <Avatar className="w-16 h-16 border-4 border-white dark:border-gray-800 shadow-lg">
-                          <AvatarImage src={client.avatar} />
+                          <AvatarImage src={client.onboarding?.profile_image} />
                           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-lg font-bold">
-                            {client.firstName[0]}{client.lastName[0]}
+                            {client.name}
                           </AvatarFallback>
+
                         </Avatar>
                         <span className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white dark:border-gray-800 ${client.status === "active" ? "bg-emerald-500" : "bg-gray-400"}`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-lg text-foreground truncate">
-                          {client.firstName} {client.lastName}
+                          {client.name}
                         </h3>
                         <p className="text-sm text-muted-foreground truncate flex items-center gap-1">
                           <Mail className="w-3 h-3" />
                           {client.email}
                         </p>
-                        <div className="mt-2">
-                          {getMembershipBadge(client.membershipType)}
-                        </div>
+
                       </div>
                     </div>
                   </div>
@@ -343,11 +186,12 @@ const Index = () => {
                   {/* Goals */}
                   <div className="px-6 pb-4">
                     <div className="flex flex-wrap gap-2">
-                      {client.goals.map((goal, idx) => (
+                      {client.onboarding?.fitness_goals?.map((goal: string, idx: number) => (
                         <Badge key={idx} variant="outline" className="text-xs bg-muted/50">
                           {goal}
                         </Badge>
                       ))}
+
                     </div>
                   </div>
 
@@ -399,7 +243,7 @@ const Index = () => {
         )}
       </main>
 
-      {/* Delete Confirmation Dialog */}
+ 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

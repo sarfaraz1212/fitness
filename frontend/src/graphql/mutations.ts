@@ -1,28 +1,5 @@
 import { gql } from '@apollo/client';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  is_verified: boolean;
-  is_onboarded: boolean;
-}
-
-export interface LoginData {
-  login: {
-    token: string;
-    user: User;
-  };
-}
-
-export interface CreateClientData {
-  createClient: {
-    id: string;
-    name: string;
-  };
-}
-
 export const LOGIN_MUTATION = gql`
   mutation Login($input: LoginUserInput!) {
     login(input: $input) {
@@ -42,6 +19,14 @@ export const LOGIN_MUTATION = gql`
 export const CREATE_CLIENT_MUTATION = gql`
   mutation Mutation($input: CreateClientInput!) {
     createClient(input: $input) {
+      name
+    }
+  }
+`;
+
+export const CREATE_ONBOARDING_MUTATION = gql`
+  mutation CreateOnboarding($input: CreateOnboardingInput!) {
+    createOnboarding(input: $input) {
       name
     }
   }

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User } from '@/lib/queries';
+import type { User } from '@/graphql/types';
 
 interface AuthState {
   user: User | null;

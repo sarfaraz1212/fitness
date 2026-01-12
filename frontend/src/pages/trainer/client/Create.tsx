@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Save } from "lucide-react";
 import { useMutation } from "@apollo/client/react";
-import { CREATE_CLIENT_MUTATION, type CreateClientData } from "@/lib/queries";
+import { CREATE_CLIENT_MUTATION } from "@/graphql/mutations";
+import { type CreateClientData } from "@/graphql/types";
 import { useAuthStore } from "@/stores/authStore";
 
 const ClientForm = () => {

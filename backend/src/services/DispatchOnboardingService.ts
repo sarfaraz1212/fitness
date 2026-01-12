@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import Onboarding from '../models/Onboarding';
 import { IUser } from '../models/User';
 import { ActionResponse } from '../interfaces/ActionResponse';
+import { env } from '../config/env';
 
 export class DispatchOnboardingService {
     async dispatch(user: IUser): Promise<ActionResponse> {
@@ -29,7 +30,7 @@ export class DispatchOnboardingService {
             }
 
             const encryptedToken = token;
-            const onboardingLink = `http://localhost:3000/onboarding?token=${encryptedToken}`;
+            const onboardingLink = `${env.FRONTEND_URL}/onboarding?token=${encryptedToken}`;
 
             console.log(`Sending onboarding email to ${user.email} with link: ${onboardingLink}`);
 

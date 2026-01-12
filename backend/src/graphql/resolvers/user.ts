@@ -14,12 +14,12 @@ export const userResolvers = {
   },
   Mutation: {
     createClient: async (_: any, { input }: { input: any }): Promise<IUser> => {
-        const action = new CreateUserAction();
-        return await action.execute(input);
+      const action = new CreateUserAction();
+      return await action.execute(input);
     },
     createUser: async (_: any, { input }: { input: any }): Promise<IUser> => {
-        const action = new CreateUserAction();
-        return await action.execute(input);
+      const action = new CreateUserAction();
+      return await action.execute(input);
     },
     updateUser: async (_: any, { id, input }: { id: string; input: any }): Promise<IUser | null> => {
       const { name, email, role } = input;

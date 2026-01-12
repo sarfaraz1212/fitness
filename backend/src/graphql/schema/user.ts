@@ -18,6 +18,7 @@ export const userTypeDefs = gql`
     role: Role!
     is_verified: Boolean!
     is_onboarded: Boolean!
+    onboarding: Onboarding
     createdAt: String!
     updatedAt: String!
   }
@@ -26,6 +27,7 @@ export const userTypeDefs = gql`
     name: String!
     email: String!
     password: String!
+    role: Role!
   }
 
   input UpdateUserInput {
@@ -45,6 +47,7 @@ export const userTypeDefs = gql`
     email: String!
     assigned_trainer: ID
     role: Role = CLIENT
+    password: String!
   }
 
   type Query {
@@ -59,4 +62,4 @@ export const userTypeDefs = gql`
     deleteUser(id: ID!): Boolean!
     login(input: LoginUserInput!): AuthPayload
   }
-`;
+`;  

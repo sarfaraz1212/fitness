@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dumbbell, Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { LOGIN_MUTATION } from '@/lib/queries';
-import type { LoginData } from '@/lib/queries';
+import { LOGIN_MUTATION } from '@/graphql/mutations';
+import type { LoginData } from '@/graphql/types';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 
@@ -29,12 +29,12 @@ const Login = () => {
         description: `Welcome back, ${data.login.user.name}!`,
       });
 
-      
+
       if (data.login.user.role === "TRAINER") {
         navigate("/trainer");
         return;
       }
-      
+
       navigate("/dashboard");
     },
     onError: (error) => {
@@ -120,7 +120,7 @@ const Login = () => {
                 </SelectContent>
               </Select>
             </div>
-              <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium">
                 Password
               </Label>

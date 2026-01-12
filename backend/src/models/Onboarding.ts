@@ -1,31 +1,32 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+
 export interface IOnboarding extends Document {
   user_id: mongoose.Types.ObjectId;
   token: string;
   expires_at: Date;
   status: 'pending' | 'completed' | 'expired';
-  dob?: Date;
-  age?: number;
-  gender?: 'male' | 'female' | 'other';
-  blood_group?: string;
-  weight?: number;
-  height?: number;
+  dob: Date;
+  age: number;
+  gender: 'male' | 'female' | 'other';
+  blood_group: string;
+  weight: number;
+  height: number;
   body_fat?: number;
   bmi?: number;
-  fitness_level?: 'beginner' | 'intermediate' | 'advanced';
-  exercise_frequency?: number;
-  sleep_hours?: number;
-  smoking_frequency?: 'never' | 'occasionally' | 'weekly' | 'daily';
-  alcohol_frequency?: 'never' | 'occasionally' | 'weekly' | 'daily';
-  stress_level?: 'low' | 'medium' | 'high';
-  training_time?: 'morning' | 'evening' | 'flexible';
-  work_environment?: 'desk' | 'active';
-  medical_conditions?: string;
-  notes?: string;
-  diet_preferences?: any;
-  fitness_goals?: any;
-  profile_image?: string;
+  fitness_level: 'beginner' | 'intermediate' | 'advanced';
+  exercise_frequency: number;
+  sleep_hours: number;
+  smoking_frequency: 'never' | 'occasionally' | 'weekly' | 'daily';
+  alcohol_frequency: 'never' | 'occasionally' | 'weekly' | 'daily';
+  stress_level: 'low' | 'medium' | 'high';
+  training_time: 'morning' | 'evening' | 'flexible';
+  work_environment: 'desk' | 'active';
+  medical_conditions: string;
+  notes: string;
+  diet_preferences: any;
+  fitness_goals: any;
+  profile_image: string;
   createdAt: Date;
   updatedAt: Date;
 }

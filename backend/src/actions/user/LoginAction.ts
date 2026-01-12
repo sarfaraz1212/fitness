@@ -12,7 +12,6 @@ export default class LoginAction implements ActionInterface {
     }
 
     async execute(payload: object): Promise<any> {
-
         const validatedData = ValidationService.validate(this.schema, payload);
         const { email, password, role } = validatedData;
 
