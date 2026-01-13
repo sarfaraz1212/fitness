@@ -47,7 +47,6 @@ export const userTypeDefs = gql`
     email: String!
     assigned_trainer: ID
     role: Role = CLIENT
-    password: String!
   }
 
   type Query {

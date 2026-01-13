@@ -13,9 +13,16 @@ export default class CreateUserAction implements ActionInterface {
 
     async execute(payload: object): Promise<any> {
 
-        const validatedData      = ValidationService.validate(this.schema, payload);
-        const savedUser          = await UserCreationFactory.createUser(validatedData);
+        try {
+            const validatedData      = ValidationService.validate(this.schema, payload);
+            const savedUser          = await UserCreationFactory.createUser(validatedData);
 
-        return savedUser;
+            return savedUser;
+
+        } catch (error) {
+            console.log(error.message);
+            throw error;
+        }
+       
     }
 }
