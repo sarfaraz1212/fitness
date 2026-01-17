@@ -43,7 +43,6 @@ export const SearchComponent: React.FC<SearchComponentProps> = ({
             <SelectItem value="protein">Highest Protein</SelectItem>
             <SelectItem value="carbs">Highest Carbs</SelectItem>
             <SelectItem value="fats">Highest Fats</SelectItem>
-            <SelectItem value="meals">Most Meals</SelectItem>
           </SelectContent>
         </Select>
         <Button

@@ -14,6 +14,7 @@ export interface DietPlan {
   name: string;
   description: string;
   meals: Meal[];
+  isOpen?: boolean; // Optional property for UI state
 }
 
 export interface SearchComponentProps {

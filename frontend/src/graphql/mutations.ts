@@ -65,6 +65,30 @@ export const DELETE_MEAL =  gql`
   }
 `;
 
+export const EDIT_MEAL_MUTATION = gql`
+  mutation EditMeal($dietId: String!, $mealId: String!, $input: MealInput!) {
+    editMeal(dietId: $dietId, mealId: $mealId, input: $input) {
+      _id
+      name
+      description
+      time
+      calories
+      protein
+      carbs
+      fats
+    }
+  }
+`;
+
+export const EDIT_DIET_MUTATION = gql`
+  mutation EditDiet($dietId: String!, $input: EditDietInput!) {
+    editDiet(dietId: $dietId, input: $input) {
+      _id
+      name
+      description
+    }
+  }
+`;
 
 export const DELETE_DIET =  gql`
   mutation Mutation($dietId: String!) {
