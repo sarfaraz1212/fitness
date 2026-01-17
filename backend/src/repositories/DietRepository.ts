@@ -78,6 +78,62 @@ export class DietRepository {
 
     }
 
+    static async updateMeal(dietId: string, mealId: string, input: {
+        name: string;
+        description?: string;
+        time: string;
+        calories: number;
+        protein: number;
+        carbs: number;
+        fats: number;
+    }): Promise<IMeal> {
+        const diet = await Diet.findById(dietId);
+
+        if (!diet) {
+            throw new Error("Diet not found");
+        }
+
+        const meal = diet.meals.find(
+            meal => meal._id.toString() === mealId
+        );
+
+        if (!meal) {
+            throw new Error("Meal not found");
+        }
+
+        // Update meal fields
+        meal.name = input.name;
+        meal.description = input.description || "";
+        meal.time = input.time;
+        meal.calories = input.calories;
+        meal.protein = input.protein;
+        meal.carbs = input.carbs;
+        meal.fats = input.fats;
+
+        await diet.save();
+
+        return meal;
+    }
+
+    static async updatePlan(dietId: string, input: {
+        name: string;
+        description?: string;
+    }): Promise<IDiet> {
+        const diet = await Diet.findById(dietId);
+
+        if (!diet) {
+            throw new Error("Diet not found");
+        }
+
+        // Update diet fields
+        diet.name = input.name;
+        diet.description = input.description || "";
+
+        await diet.save();
+
+        return diet;
+    }
+
     
 }
 

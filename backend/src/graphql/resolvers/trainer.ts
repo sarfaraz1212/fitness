@@ -1,5 +1,7 @@
 import { CreateDietAction } from '../../actions/trainer/CreateDietAction';
+import { EditDietAction } from '../../actions/trainer/EditDietAction';
 import CreateMealAction  from '../../actions/trainer/CreateMealAction';
+import EditMealAction from '../../actions/trainer/EditMealAction';
 import DeleteDietAction from '../../actions/trainer/DeleteDietAction';
 import DeleteMealAction from '../../actions/trainer/DeleteMealAction';
 import { GetClientsAction } from '../../actions/trainer/GetClientsAction';
@@ -62,6 +64,22 @@ export const trainerResolvers = {
 
             return actionResponse;
         },
+        editDiet: async (_: any, args:any ,context:any) => {
+            
+            const {name, description} = args.input;
+
+            const action = new EditDietAction();
+
+            const actionResponse = await action.execute({
+                dietId: args.dietId,
+                input: {
+                    name,
+                    description
+                }
+            });
+
+            return actionResponse;
+        },
         createMeal: async (_: any, args:any ,context:any) => {
             const action = new CreateMealAction();
             
@@ -71,6 +89,17 @@ export const trainerResolvers = {
             });
 
            return actionReponse;
+        },
+        editMeal: async (_: any, args:any ,context:any) => {
+            const action = new EditMealAction();
+            
+            const actionResponse = await action.execute({
+                dietId: args.dietId,
+                mealId: args.mealId,
+                input: args.input
+            });
+
+            return actionResponse;
         },
         deleteDiet: async (_: any, args:any ,context:any) => {
             const action =  new DeleteDietAction();

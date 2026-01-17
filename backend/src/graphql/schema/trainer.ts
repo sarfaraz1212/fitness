@@ -56,6 +56,11 @@ export const trainerTypeDefs = gql`
     description: String
   }
 
+  input EditDietInput {
+    name: String!
+    description: String
+  }
+
   type MacroResponse {
     name: String!
     calories: Float!
@@ -79,8 +84,10 @@ export const trainerTypeDefs = gql`
 
   type Mutation {
     createDiet(input: CreateDietInput!): Diet!
+    editDiet(dietId: String!, input: EditDietInput!): Diet!
     deleteDiet(dietId:String!): ID!
     createMeal(dietId:String! ,input: MealInput!): Meal!
+    editMeal(dietId: String!, mealId: String!, input: MealInput!): Meal!
     deleteMeal(dietId: String!, mealId: String!): DeleteMealResponse!
   }
 `;
