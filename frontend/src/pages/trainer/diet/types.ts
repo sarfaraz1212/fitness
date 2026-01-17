@@ -81,3 +81,16 @@ export interface GetMacrosResponse {
 export interface GetMacrosVariables {
   name: string
 }
+
+export interface DeleteMealVariables {
+  dietId: string;
+  mealId: string;
+}
+
+export interface DeleteDietVariables {
+  dietId: string;
+}
+
+export interface DeleteDietResponse{
+  deleteDiet: string; // the ID of the deleted diet
+}

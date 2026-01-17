@@ -7,8 +7,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { NewPlanFormProps } from "../types";
-import {Spinner} from "../../../../../components/ui/spinner";
+import type { NewPlanFormProps } from "../../types";
+import {Spinner} from "../../../../../../components/ui/spinner";
 
 const NewPlanForm: React.FC<NewPlanFormProps> = ({
     formData,

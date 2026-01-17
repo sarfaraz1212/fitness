@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus, Sparkles } from "lucide-react";
-import type { AddMealFormProps } from "../types";
-import {Spinner} from "../../../../../components/ui/spinner";
+import type { AddMealFormProps } from "../../types";
+import {Spinner} from "../../../../../../components/ui/spinner";
 
 
 const AddMealForm: React.FC<AddMealFormProps> = ({

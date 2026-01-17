@@ -7,20 +7,20 @@ export const trainerTypeDefs = gql`
     name: String!
     description: String
     time: String!
-    calories: Int!
-    protein: Int!
-    carbs: Int!
-    fats: Int!
+    calories: Float!
+    protein: Float!
+    carbs: Float!
+    fats: Float!
   }
 
   input MealInput {
     name: String!
     description: String
     time: String!
-    calories: Int!
-    protein: Int!
-    carbs: Int!
-    fats: Int!
+    calories: Float!
+    protein: Float!
+    carbs: Float!
+    fats: Float!
   }
 
 
@@ -72,9 +72,15 @@ export const trainerTypeDefs = gql`
     getMacros(name: String!): MacroResponse!
   }
 
+  type DeleteMealResponse{
+    dietId: String!
+    mealId: String!
+  }
 
   type Mutation {
     createDiet(input: CreateDietInput!): Diet!
+    deleteDiet(dietId:String!): ID!
     createMeal(dietId:String! ,input: MealInput!): Meal!
+    deleteMeal(dietId: String!, mealId: String!): DeleteMealResponse!
   }
 `;

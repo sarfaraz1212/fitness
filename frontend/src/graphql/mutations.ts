@@ -55,3 +55,21 @@ export const CREATE_MEAL_MUTATION = gql`
     }
   }
 `;
+
+export const DELETE_MEAL =  gql`
+  mutation DeleteMeal($dietId: String!, $mealId: String!) {
+    deleteMeal(dietId: $dietId, mealId: $mealId) {
+      dietId
+      mealId
+    }
+  }
+`;
+
+
+export const DELETE_DIET =  gql`
+  mutation Mutation($dietId: String!) {
+    deleteDiet(dietId: $dietId)
+  }
+`;
+
+

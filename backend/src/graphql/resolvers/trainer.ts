@@ -1,5 +1,7 @@
 import { CreateDietAction } from '../../actions/trainer/CreateDietAction';
 import CreateMealAction  from '../../actions/trainer/CreateMealAction';
+import DeleteDietAction from '../../actions/trainer/DeleteDietAction';
+import DeleteMealAction from '../../actions/trainer/DeleteMealAction';
 import { GetClientsAction } from '../../actions/trainer/GetClientsAction';
 import { GetDietsAction } from '../../actions/trainer/GetDietsAction';
 import { GetMarcosAction } from '../../actions/trainer/GetMarcosAction';
@@ -70,5 +72,20 @@ export const trainerResolvers = {
 
            return actionReponse;
         },
+        deleteDiet: async (_: any, args:any ,context:any) => {
+            const action =  new DeleteDietAction();
+
+            const {dietId} = args;
+           
+            return action.execute({dietId});
+        },
+        deleteMeal: async(_:any, args:any,context:any) => {
+
+            const action =  new DeleteMealAction();
+
+            const {dietId,mealId} = args;
+           
+            return action.execute({dietId,mealId});
+        }
     },
 };
