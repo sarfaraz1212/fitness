@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
   Utensils,
   Plus,
@@ -23,16 +23,22 @@ import EditMealComponent from "./Components/meals/EditMealComponent";
 
 import { useDiet } from "./Components/useDiet";
 import { useMeals } from "./Components/useMeals";
-import { processDietPlans } from "./services/dietPlanService";
+import AppPagination from "@/components/common/AppPagination";
+import { useDebounce } from "use-debounce";
+import { useEffect } from "react";
 
 const Index: React.FC = () => {
 
   const [showNewPlanForm, setShowNewPlanForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("");
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
+  const [sortBy, setSortBy] = useState("newest");
+  const [page, setPage] = useState(1);
+  const limit = 1; // Testing with 1 per page
 
   const {
     dietPlans,
+    dietsData, // Actually dietsData is already in scope from useDiet refactor? No, I need to check useDiet return.
     loadingPlans,
     isLoading,
     formData,
@@ -50,7 +56,16 @@ const Index: React.FC = () => {
     handleEditPlanSave,
     buttonLoaders,
     setDietPlans,
-  } = useDiet();
+  } = useDiet({
+    page,
+    limit,
+    search: debouncedSearchQuery,
+    sortBy
+  });
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchQuery, sortBy]);
 
   const {
     mealForm,
@@ -73,10 +88,6 @@ const Index: React.FC = () => {
   const openDeleteConfirm = (planId: string, mealId: string, name: string) =>
     setDeleteMealConfirm({ isOpen: true, planId, mealId, name });
 
-  // Process diet plans with search and sort
-  const processedPlans = useMemo(() => {
-    return processDietPlans(dietPlans, searchQuery, sortBy);
-  }, [dietPlans, searchQuery, sortBy]);
 
   if (loadingPlans || isLoading) {
     return (
@@ -111,12 +122,12 @@ const Index: React.FC = () => {
         />
 
         <div className="grid lg:grid-cols-2 gap-6 mt-4 px-2 lg:px-0">
-          {processedPlans.length === 0 && !showNewPlanForm ? (
+          {dietPlans.length === 0 && !showNewPlanForm ? (
             <div className="lg:col-span-2 text-center py-12 rounded-2xl bg-card border border-border">
               <Utensils className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                {searchQuery || sortBy 
-                  ? "No diet plans match your search or filter criteria." 
+                {searchQuery || sortBy
+                  ? "No diet plans match your search or filter criteria."
                   : "No diet plans yet. Create your first one!"}
               </p>
               {!searchQuery && !sortBy && (
@@ -126,7 +137,7 @@ const Index: React.FC = () => {
               )}
             </div>
           ) : (
-            processedPlans.map((plan) => {
+            dietPlans.map((plan) => {
               const totals = getTotalMacros(plan.meals);
               return (
                 <Collapsible
@@ -152,8 +163,8 @@ const Index: React.FC = () => {
                           variant="ghost"
                           size="icon"
                           className="text-primary hover:text-primary hover:bg-primary/10"
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
+                          onClick={(e) => {
+                            e.stopPropagation();
                             openEditPlan(plan);
                           }}
                         >
@@ -163,8 +174,8 @@ const Index: React.FC = () => {
                           variant="ghost"
                           size="icon"
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setDeletePlanConfirm({ isOpen: true, planId: plan.id, name: plan.name });
                           }}
                         >
@@ -220,6 +231,16 @@ const Index: React.FC = () => {
             })
           )}
         </div>
+
+        {dietsData && (
+          <div className="flex justify-center mt-10 pb-10">
+            <AppPagination
+              currentPage={dietsData.currentPage}
+              totalPages={dietsData.totalPages}
+              onPageChange={(p) => setPage(p)}
+            />
+          </div>
+        )}
       </main>
 
       {/* Delete Modals */}

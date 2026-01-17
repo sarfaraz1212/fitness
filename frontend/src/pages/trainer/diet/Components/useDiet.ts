@@ -1,25 +1,28 @@
 import { useState, useEffect } from "react";
-import { useMutation } from "@apollo/client/react"; 
+import { useMutation } from "@apollo/client/react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { CREATE_DIET_MUTATION, DELETE_DIET, EDIT_DIET_MUTATION } from "@/graphql/mutations";
 import { fetchDiets } from "@/lib/React-query/queryFunction";
 
-import type { 
-        DietPlan,
-        CreateDietResponse, 
-        CreateDietVariables, 
-        DeleteDietResponse, 
-        DeleteDietVariables, 
-        Meal 
+import type {
+  DietPlan,
+  CreateDietResponse,
+  CreateDietVariables,
+  DeleteDietResponse,
+  DeleteDietVariables,
+  EditDietResponse,
+  EditDietVariables,
+  Meal
 } from "../types";
 
-export const useDiet = () => {
+export const useDiet = (params: { page: number; limit: number; search: string; sortBy: string }) => {
   const { toast } = useToast();
 
-  const [dietPlans, setDietPlans]                 = useState<DietPlan[]>([]);
-  const [loadingPlans, setLoadingPlans]           = useState(true);
-  const [formData, setFormData]                   = useState({ name: "", description: "" });
+  const [dietPlans, setDietPlans] = useState<DietPlan[]>([]);
+  const [pagination, setPagination] = useState({ total: 0, totalPages: 0, currentPage: 1 });
+  const [loadingPlans, setLoadingPlans] = useState(true);
+  const [formData, setFormData] = useState({ name: "", description: "" });
   const [deletePlanConfirm, setDeletePlanConfirm] = useState<null | { isOpen: boolean; planId: string; name: string }>(null);
   const [editPlan, setEditPlan] = useState<null | { isOpen: boolean; plan: DietPlan }>(null);
 
@@ -27,19 +30,22 @@ export const useDiet = () => {
   const [buttonLoaders, setButtonLoaders] = useState({ deletingPlan: false, updatingPlan: false });
 
   const [createDiet] = useMutation<CreateDietResponse, CreateDietVariables>(CREATE_DIET_MUTATION);
-  const [editDiet] = useMutation(EDIT_DIET_MUTATION);
+  const [editDiet] = useMutation<EditDietResponse, EditDietVariables>(EDIT_DIET_MUTATION);
   const [deletePlan] = useMutation<DeleteDietResponse, DeleteDietVariables>(DELETE_DIET);
 
   // Fetch diets
-  const { data: diets, isLoading } = useQuery({ queryKey: ["diets"], queryFn: fetchDiets });
+  const { data: dietsData, isLoading } = useQuery({
+    queryKey: ["diets", params.page, params.limit, params.search, params.sortBy],
+    queryFn: () => fetchDiets(params)
+  });
 
   useEffect(() => {
-    if (diets) {
-      const mapped: DietPlan[] = diets.map((d: any) => ({
+    if (dietsData && dietsData.diets) {
+      const mapped: DietPlan[] = dietsData.diets.map((d: any) => ({
         id: d._id,
         name: d.name,
         description: d.description,
-        meals: d.meals.map((m: any) => ({
+        meals: (d.meals || []).map((m: any) => ({
           id: m._id,
           name: m.name,
           description: m.description,
@@ -51,9 +57,22 @@ export const useDiet = () => {
         })),
       }));
       setDietPlans(mapped);
+      setPagination({
+        total: dietsData.total || 0,
+        totalPages: dietsData.totalPages || 0,
+        currentPage: dietsData.currentPage || 1
+      });
+    } else if (dietsData) {
+      // Handle the case where dietsData exists but maybe empty or default
+      setPagination(prev => ({
+        ...prev,
+        total: dietsData.total || 0,
+        totalPages: dietsData.totalPages || 0,
+        currentPage: dietsData.currentPage || 1
+      }));
     }
     setLoadingPlans(false);
-  }, [diets]);
+  }, [dietsData]);
 
   const togglePlan = (planId: string) => {
     setDietPlans(prev =>
@@ -83,7 +102,10 @@ export const useDiet = () => {
       const response = await createDiet({ variables: { input: { name: formData.name.trim(), description: formData.description.trim() } } });
       if (response.data?.createDiet) {
         const newPlan: DietPlan = { id: response.data.createDiet._id, name: formData.name.trim(), description: formData.description.trim(), meals: [] };
-        setDietPlans(prev => [...prev, newPlan]);
+        // Refetching might be better with pagination, but for now we just add it locally if it's page 1
+        if (params.page === 1) {
+          setDietPlans(prev => [newPlan, ...prev].slice(0, params.limit));
+        }
         setFormData({ name: "", description: "" });
         toast({ title: "Plan created!", description: `${newPlan.name} has been created.` });
       }
@@ -123,7 +145,7 @@ export const useDiet = () => {
 
   const handleEditPlanSave = async () => {
     if (!editPlan) return;
-    
+
     if (!editPlan.plan.name.trim()) {
       toast({ title: "Error", description: "Plan name is required", variant: "destructive" });
       return;
@@ -132,7 +154,7 @@ export const useDiet = () => {
     setButtonLoaders(prev => ({ ...prev, updatingPlan: true }));
 
     try {
-      const { data } = await editDiet({
+      const response = await editDiet({
         variables: {
           dietId: editPlan.plan.id,
           input: {
@@ -142,11 +164,11 @@ export const useDiet = () => {
         },
       });
 
-      if (data?.editDiet) {
+      if (response.data?.editDiet) {
         const updatedPlan: DietPlan = {
-          id: data.editDiet._id,
-          name: data.editDiet.name,
-          description: data.editDiet.description || "",
+          id: response.data.editDiet._id,
+          name: response.data.editDiet.name,
+          description: response.data.editDiet.description || "",
           meals: editPlan.plan.meals, // Keep existing meals
         };
 
@@ -167,6 +189,8 @@ export const useDiet = () => {
 
   return {
     dietPlans,
+    pagination,
+    dietsData,
     loadingPlans,
     isLoading,
     formData,

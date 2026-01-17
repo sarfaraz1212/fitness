@@ -20,21 +20,26 @@ export const GET_CLIENTS_QUERY = gql`
 `;
 
 export const GET_DIETS_QUERY = gql`
-  query GetDiets {
-    getDiets {
-      name
-      meals {
-        time
-        protein
+  query GetDiets($input: FetchDietsInput) {
+    getDiets(input: $input) {
+      diets {
         name
-        fats
+        meals {
+          time
+          protein
+          name
+          fats
+          description
+          carbs
+          calories
+          _id
+        }
         description
-        carbs
-        calories
         _id
       }
-      description
-      _id
+      total
+      totalPages
+      currentPage
     }
   }
 `;

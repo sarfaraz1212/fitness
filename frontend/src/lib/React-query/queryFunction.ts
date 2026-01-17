@@ -14,21 +14,33 @@ export const fetchClients = async (params: FetchClientsParams = {}): Promise<any
         variables: { input: params },
         fetchPolicy: 'network-only',
     });
-    
+
     return data?.getClients ?? {
         clients: [],
         total: 0,
         totalPages: 0,
         currentPage: params.page || 1,
-      };
+    };
 };
 
-export const fetchDiets = async (): Promise<any> => {
+export interface FetchDietsParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: string;
+}
 
-    const { data } = await client.query({
+export const fetchDiets = async (params: FetchDietsParams = {}): Promise<any> => {
+    const response = await client.query({
         query: GET_DIETS_QUERY,
+        variables: { input: params },
         fetchPolicy: 'network-only',
     });
-    
-    return data.getDiets;
+
+    return (response.data as any)?.getDiets ?? {
+        diets: [],
+        total: 0,
+        totalPages: 0,
+        currentPage: params.page || 1,
+    };
 };

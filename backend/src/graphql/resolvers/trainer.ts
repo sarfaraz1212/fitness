@@ -1,6 +1,6 @@
 import { CreateDietAction } from '../../actions/trainer/CreateDietAction';
 import { EditDietAction } from '../../actions/trainer/EditDietAction';
-import CreateMealAction  from '../../actions/trainer/CreateMealAction';
+import CreateMealAction from '../../actions/trainer/CreateMealAction';
 import EditMealAction from '../../actions/trainer/EditMealAction';
 import DeleteDietAction from '../../actions/trainer/DeleteDietAction';
 import DeleteMealAction from '../../actions/trainer/DeleteMealAction';
@@ -30,31 +30,34 @@ export const trainerResolvers = {
         },
 
         getDiets: async (_: any, args: any, context: any): Promise<any> => {
-
-            // const { page, limit, search, onboardingFilter } = args.input;
+            const { page, limit, search, sortBy } = args.input || {};
 
             const action = new GetDietsAction();
 
             const actionResponse = await action.execute({
                 trainerId: context.currentUser._id,
+                page,
+                limit,
+                search,
+                sortBy
             });
 
             return actionResponse;
         },
 
         getMacros: async (_: any, args: any, context: any): Promise<any> => {
-            
-            const action  = new GetMarcosAction();
+
+            const action = new GetMarcosAction();
 
             return await action.execute({ name: args.name });
         }
     },
     Mutation: {
-        createDiet: async (_: any, args:any ,context:any) => {
-            
-            const {name,description} = args.input;
+        createDiet: async (_: any, args: any, context: any) => {
 
-            const action         = new CreateDietAction();
+            const { name, description } = args.input;
+
+            const action = new CreateDietAction();
 
             const actionResponse = await action.execute({
                 name,
@@ -64,9 +67,9 @@ export const trainerResolvers = {
 
             return actionResponse;
         },
-        editDiet: async (_: any, args:any ,context:any) => {
-            
-            const {name, description} = args.input;
+        editDiet: async (_: any, args: any, context: any) => {
+
+            const { name, description } = args.input;
 
             const action = new EditDietAction();
 
@@ -80,19 +83,19 @@ export const trainerResolvers = {
 
             return actionResponse;
         },
-        createMeal: async (_: any, args:any ,context:any) => {
+        createMeal: async (_: any, args: any, context: any) => {
             const action = new CreateMealAction();
-            
+
             const actionReponse = await action.execute({
-                dietId:args.dietId,
-                input:args.input
+                dietId: args.dietId,
+                input: args.input
             });
 
-           return actionReponse;
+            return actionReponse;
         },
-        editMeal: async (_: any, args:any ,context:any) => {
+        editMeal: async (_: any, args: any, context: any) => {
             const action = new EditMealAction();
-            
+
             const actionResponse = await action.execute({
                 dietId: args.dietId,
                 mealId: args.mealId,
@@ -101,20 +104,20 @@ export const trainerResolvers = {
 
             return actionResponse;
         },
-        deleteDiet: async (_: any, args:any ,context:any) => {
-            const action =  new DeleteDietAction();
+        deleteDiet: async (_: any, args: any, context: any) => {
+            const action = new DeleteDietAction();
 
-            const {dietId} = args;
-           
-            return action.execute({dietId});
+            const { dietId } = args;
+
+            return action.execute({ dietId });
         },
-        deleteMeal: async(_:any, args:any,context:any) => {
+        deleteMeal: async (_: any, args: any, context: any) => {
 
-            const action =  new DeleteMealAction();
+            const action = new DeleteMealAction();
 
-            const {dietId,mealId} = args;
-           
-            return action.execute({dietId,mealId});
+            const { dietId, mealId } = args;
+
+            return action.execute({ dietId, mealId });
         }
     },
 };

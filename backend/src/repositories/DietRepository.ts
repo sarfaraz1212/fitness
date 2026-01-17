@@ -2,44 +2,88 @@ import { Types } from 'mongoose';
 import Diet, { IDiet, IMeal } from '../models/Diet';
 
 export class DietRepository {
-    static async create(data:any): Promise<IDiet> {
+    static async create(data: any): Promise<IDiet> {
         const diet = new Diet(data);
         return await diet.save();
-    }    
+    }
 
     static async getByTrainer(addedBy: string) {
         return Diet.find({ addedBy });
     }
 
-    static async delete(dietId: string)
-    {
+    static async getPaginated(
+        condition: any,
+        page: number = 1,
+        limit: number = 8,
+        search?: string,
+        sortBy?: string
+    ): Promise<{ diets: IDiet[], total: number, totalPages: number, currentPage: number }> {
+        const query: any = { ...condition };
+
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        let sort: any = { createdAt: -1 };
+        if (sortBy) {
+            if (sortBy === 'newest') sort = { createdAt: -1 };
+            if (sortBy === 'oldest') sort = { createdAt: 1 };
+            if (sortBy === 'name') sort = { name: 1 };
+            if (sortBy === 'calories') sort = { 'meals.calories': -1 };
+            if (sortBy === 'protein') sort = { 'meals.protein': -1 };
+            if (sortBy === 'carbs') sort = { 'meals.carbs': -1 };
+            if (sortBy === 'fats') sort = { 'meals.fats': -1 };
+        }
+
+        const skip = (page - 1) * limit;
+
+        const [diets, total] = await Promise.all([
+            Diet.find(query)
+                .skip(skip)
+                .limit(limit)
+                .sort(sort),
+            Diet.countDocuments(query)
+        ]);
+
+        return {
+            diets,
+            total,
+            totalPages: Math.ceil(total / limit),
+            currentPage: page
+        };
+    }
+
+    static async delete(dietId: string) {
         return await Diet.deleteOne({ _id: dietId });
     }
 
     static async findMeal(dietId: string, mealId: string) {
         const diet = await Diet.findById(dietId);
-    
+
         if (!diet) {
             throw new Error("Diet not found");
         }
-    
+
         const meal = diet.meals.find(
             meal => meal._id.toString() === mealId
         );
-          
+
         if (!meal) {
             throw new Error("Meal not found");
         }
-    
+
         return meal;
     }
 
-    static async addMeal(data:any): Promise<IMeal> {
+    static async addMeal(data: any): Promise<IMeal> {
 
         const diet = await Diet.findById(data.dietId);
 
         if (!diet) {
-        throw new Error("Diet not found");
+            throw new Error("Diet not found");
         }
 
 
@@ -59,7 +103,7 @@ export class DietRepository {
 
         return diet.meals[diet.meals.length - 1];
 
-    }   
+    }
 
     static async deleteMeal(dietId: string, mealId: string) {
         const result = await Diet.updateOne(
@@ -134,7 +178,7 @@ export class DietRepository {
         return diet;
     }
 
-    
+
 }
 
 

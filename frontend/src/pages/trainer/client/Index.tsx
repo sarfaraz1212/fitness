@@ -1,19 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useDebounce } from "use-debounce";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Search,
   Plus,
-  Filter,
   Users,
-  UserCheck,
-  UserX,
   TrendingUp,
   ArrowLeft,
   Eye,
@@ -43,6 +38,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchClients } from "@/lib/React-query/queryFunction";
 import TrainerClientStatsComponent from "./components/TrainerClientStatsComponent";
 import TrainerClientSearchComponent from "./components/TrainerClientSearchComponent";
+import AppPagination from "@/components/common/AppPagination";
 
 
 
@@ -51,8 +47,8 @@ const Index = () => {
 
 
   const navigate = useNavigate();
-  const [page] = useState(1);
-  const limit = 8;
+  const [page, setPage] = useState(1);
+  const limit = 1;
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
   const [onboardingFilter, setOnboardingFilter] = useState<boolean | null>(null);
@@ -60,15 +56,18 @@ const Index = () => {
 
 
   const { data: clientsData, isLoading, error } = useQuery({
-    queryKey: ["clients", page, limit,debouncedSearchQuery, onboardingFilter],
+    queryKey: ["clients", page, limit, debouncedSearchQuery, onboardingFilter],
     queryFn: () => fetchClients({
       page: page,
-      limit:limit,
+      limit: limit,
       search: debouncedSearchQuery,
       onboardingFilter
     })
   });
 
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchQuery, onboardingFilter]);
 
 
   if (isLoading) return <div className="p-8 text-center">Loading clients...</div>;
@@ -84,7 +83,7 @@ const Index = () => {
   const confirmDelete = () => {
     // Handle delete logic here
     setDeleteDialogOpen(false);
- 
+
   };
 
   return (
@@ -132,102 +131,110 @@ const Index = () => {
 
         {/* Client Grid */}
         {clientsData?.clients.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {clientsData?.clients.map((client: any) => (
-              <Card
-                key={client.id}
-                className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-900 overflow-hidden cursor-pointer"
-                onClick={() => navigate(`/trainer/clients/${client.id}`)}
-              >
-                <CardContent className="p-0">
-                  {/* Card Header with Avatar */}
-                  <div className="relative p-6 pb-4">
-                    <div className="absolute top-4 right-4">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="opacity-100">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/trainer/clients/${client.id}`); }}>
-                            <Eye className="w-4 h-4 mr-2" /> View Profile
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/trainer/clients/${client.id}/edit`); }}>
-                            <Pencil className="w-4 h-4 mr-2" /> Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) => { e.stopPropagation(); handleDelete(client); }}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {clientsData?.clients.map((client: any) => (
+                <Card
+                  key={client.id}
+                  className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-900 overflow-hidden cursor-pointer"
+                  onClick={() => navigate(`/trainer/clients/${client.id}`)}
+                >
+                  <CardContent className="p-0">
+                    {/* Card Header with Avatar */}
+                    <div className="relative p-6 pb-4">
+                      <div className="absolute top-4 right-4">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon" className="opacity-100">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/trainer/clients/${client.id}`); }}>
+                              <Eye className="w-4 h-4 mr-2" /> View Profile
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/trainer/clients/${client.id}/edit`); }}>
+                              <Pencil className="w-4 h-4 mr-2" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => { e.stopPropagation(); handleDelete(client); }}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
 
-                    <div className="flex items-start gap-4">
-                      <div className="relative">
-                        <Avatar className="w-16 h-16 border-4 border-white dark:border-gray-800 shadow-lg">
-                          <AvatarImage src={client.onboarding?.profile_image} />
-                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-lg font-bold">
+                      <div className="flex items-start gap-4">
+                        <div className="relative">
+                          <Avatar className="w-16 h-16 border-4 border-white dark:border-gray-800 shadow-lg">
+                            <AvatarImage src={client.onboarding?.profile_image} />
+                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-lg font-bold">
+                              {client.name}
+                            </AvatarFallback>
+
+                          </Avatar>
+                          <span className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white dark:border-gray-800 ${client.status === "active" ? "bg-emerald-500" : "bg-gray-400"}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-lg text-foreground truncate">
                             {client.name}
-                          </AvatarFallback>
+                          </h3>
+                          <p className="text-sm text-muted-foreground truncate flex items-center gap-1">
+                            <Mail className="w-3 h-3" />
+                            {client.email}
+                          </p>
 
-                        </Avatar>
-                        <span className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white dark:border-gray-800 ${client.status === "active" ? "bg-emerald-500" : "bg-gray-400"}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-lg text-foreground truncate">
-                          {client.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground truncate flex items-center gap-1">
-                          <Mail className="w-3 h-3" />
-                          {client.email}
-                        </p>
-
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Goals */}
-                  <div className="px-6 pb-4">
-                    <div className="flex flex-wrap gap-2">
-                      {client.onboarding?.fitness_goals?.map((goal: string, idx: number) => (
-                        <Badge key={idx} variant="outline" className="text-xs bg-muted/50">
-                          {goal}
-                        </Badge>
-                      ))}
+                    {/* Goals */}
+                    <div className="px-6 pb-4">
+                      <div className="flex flex-wrap gap-2">
+                        {client.onboarding?.fitness_goals?.map((goal: string, idx: number) => (
+                          <Badge key={idx} variant="outline" className="text-xs bg-muted/50">
+                            {goal}
+                          </Badge>
+                        ))}
 
-                    </div>
-                  </div>
-
-                  {/* Progress */}
-                  <div className="px-6 pb-4">
-                    <div className="flex items-center justify-between text-sm mb-2">
-                      <span className="text-muted-foreground">Goal Progress</span>
-                      <span className="font-semibold text-foreground">{client.progressPercentage}%</span>
-                    </div>
-                    <Progress value={client.progressPercentage} className="h-2" />
-                  </div>
-
-                  {/* Footer Stats */}
-                  <div className="px-6 py-4 bg-muted/30 border-t border-border/50 flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <TrendingUp className="w-4 h-4" />
-                      <span>{client.sessionsCompleted} sessions</span>
-                    </div>
-                    {client.nextSession && (
-                      <div className="flex items-center gap-1 text-primary">
-                        <Calendar className="w-4 h-4" />
-                        <span className="font-medium">{client.nextSession}</span>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    </div>
+
+                    {/* Progress */}
+                    <div className="px-6 pb-4">
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <span className="text-muted-foreground">Goal Progress</span>
+                        <span className="font-semibold text-foreground">{client.progressPercentage}%</span>
+                      </div>
+                      <Progress value={client.progressPercentage} className="h-2" />
+                    </div>
+
+                    {/* Footer Stats */}
+                    <div className="px-6 py-4 bg-muted/30 border-t border-border/50 flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <TrendingUp className="w-4 h-4" />
+                        <span>{client.sessionsCompleted} sessions</span>
+                      </div>
+                      {client.nextSession && (
+                        <div className="flex items-center gap-1 text-primary">
+                          <Calendar className="w-4 h-4" />
+                          <span className="font-medium">{client.nextSession}</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <AppPagination
+              currentPage={clientsData.currentPage}
+              totalPages={clientsData.totalPages}
+              onPageChange={(p) => setPage(p)}
+            />
+          </>
         ) : (
           <Card className="border-0 shadow-lg bg-white dark:bg-gray-900">
             <CardContent className="p-12 text-center">
@@ -250,7 +257,7 @@ const Index = () => {
         )}
       </main>
 
- 
+
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -259,7 +266,7 @@ const Index = () => {
               <div>
                 <AlertDialogTitle>Delete Client</AlertDialogTitle>
                 <AlertDialogDescription className="mt-1">
-              
+
                 </AlertDialogDescription>
               </div>
             </div>

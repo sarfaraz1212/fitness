@@ -51,6 +51,21 @@ export const trainerTypeDefs = gql`
   }
 
 
+  type PaginatedDietsResponse {
+    diets: [Diet]
+    total: Int
+    totalPages: Int
+    currentPage: Int
+  }
+
+  input FetchDietsInput {
+    page: Int
+    limit: Int
+    search: String
+    sortBy: String
+  }
+
+
   input CreateDietInput {
     name: String!
     description: String
@@ -73,7 +88,7 @@ export const trainerTypeDefs = gql`
 
   type Query {
     getClients(input: FetchClientsInput): PaginatedClientsResponse
-    getDiets: [Diet!]!
+    getDiets(input: FetchDietsInput): PaginatedDietsResponse!
     getMacros(name: String!): MacroResponse!
   }
 

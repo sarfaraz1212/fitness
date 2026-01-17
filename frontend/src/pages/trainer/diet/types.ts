@@ -92,6 +92,22 @@ export interface DeleteDietVariables {
   dietId: string;
 }
 
-export interface DeleteDietResponse{
+export interface DeleteDietResponse {
   deleteDiet: string; // the ID of the deleted diet
+}
+
+export interface EditDietResponse {
+  editDiet: {
+    _id: string;
+    name: string;
+    description: string;
+  };
+}
+
+export interface EditDietVariables {
+  dietId: string;
+  input: {
+    name: string;
+    description: string;
+  };
 }
