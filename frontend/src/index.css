@@ -4,6 +4,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+
 @layer base {
   :root {
     --background: 40 33% 98%;
@@ -194,3 +204,5 @@
     }
   }
 }
+
+

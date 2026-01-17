@@ -8,6 +8,7 @@ interface GetClientsPayload {
     limit?: number;
     search?: string;
     status?: string;
+    onboardingFilter?: boolean
 }
 
 export class GetClientsAction implements ActionInterface {
@@ -22,10 +23,10 @@ export class GetClientsAction implements ActionInterface {
                 page,
                 limit,
                 payload.search,
-                payload.status
+                payload.status,
+                payload.onboardingFilter
             );
 
-            console.log("Data"  , data);
             return data;
         } catch (error) {
             throw error;

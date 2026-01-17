@@ -1,10 +1,16 @@
+import { CreateDietAction } from '../../actions/trainer/CreateDietAction';
+import CreateMealAction  from '../../actions/trainer/CreateMealAction';
 import { GetClientsAction } from '../../actions/trainer/GetClientsAction';
-import { IUser } from '../../models/User';
+import { GetDietsAction } from '../../actions/trainer/GetDietsAction';
+import { GetMarcosAction } from '../../actions/trainer/GetMarcosAction';
+
 
 
 export const trainerResolvers = {
     Query: {
-        getClients: async (_: any, { page, limit, search, status }: any, context: any): Promise<any> => {
+        getClients: async (_: any, args: any, context: any): Promise<any> => {
+
+            const { page, limit, search, onboardingFilter } = args.input;
 
             const action = new GetClientsAction();
 
@@ -13,16 +19,56 @@ export const trainerResolvers = {
                 page,
                 limit,
                 search,
-                status
+                onboardingFilter
             });
 
             return actionResponse;
         },
+
+        getDiets: async (_: any, args: any, context: any): Promise<any> => {
+
+            // const { page, limit, search, onboardingFilter } = args.input;
+
+            const action = new GetDietsAction();
+
+            const actionResponse = await action.execute({
+                trainerId: context.currentUser._id,
+            });
+
+            return actionResponse;
+        },
+
+        getMacros: async (_: any, args: any, context: any): Promise<any> => {
+            
+            const action  = new GetMarcosAction();
+
+            return await action.execute({ name: args.name });
+        }
     },
     Mutation: {
-        dummyAction: async (_: any, { input }: { input: string }) => {
-            console.log("Mutation input received:", input);
-            return `You sent: ${input}`;
+        createDiet: async (_: any, args:any ,context:any) => {
+            
+            const {name,description} = args.input;
+
+            const action         = new CreateDietAction();
+
+            const actionResponse = await action.execute({
+                name,
+                description,
+                addedBy: context.currentUser._id
+            });
+
+            return actionResponse;
+        },
+        createMeal: async (_: any, args:any ,context:any) => {
+            const action = new CreateMealAction();
+            
+            const actionReponse = await action.execute({
+                dietId:args.dietId,
+                input:args.input
+            });
+
+           return actionReponse;
         },
     },
 };

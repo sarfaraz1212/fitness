@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "use-debounce";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -46,21 +47,27 @@ import TrainerClientSearchComponent from "./components/TrainerClientSearchCompon
 
 
 const Index = () => {
-  const { data: clientsData, isLoading, error } = useQuery({
-    queryKey: ['clients'],
-    queryFn: () => fetchClients()
-  });
 
-  console.log(clientsData);
+
 
   const navigate = useNavigate();
+  const [page] = useState(1);
+  const limit = 8;
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
+  const [onboardingFilter, setOnboardingFilter] = useState<boolean | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
 
 
-
+  const { data: clientsData, isLoading, error } = useQuery({
+    queryKey: ["clients", page, limit,debouncedSearchQuery, onboardingFilter],
+    queryFn: () => fetchClients({
+      page: page,
+      limit:limit,
+      search: debouncedSearchQuery,
+      onboardingFilter
+    })
+  });
 
 
 
@@ -70,14 +77,14 @@ const Index = () => {
 
 
   const handleDelete = (client: any) => {
-    setClientToDelete(client);
+
     setDeleteDialogOpen(true);
   };
 
   const confirmDelete = () => {
     // Handle delete logic here
     setDeleteDialogOpen(false);
-    setClientToDelete(null);
+ 
   };
 
   return (
@@ -119,8 +126,8 @@ const Index = () => {
         <TrainerClientSearchComponent
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          activeFilter={activeFilter}
-          setActiveFilter={setActiveFilter}
+          onboardingFilter={onboardingFilter}
+          setOnboardingFilter={setOnboardingFilter}
         />
 
         {/* Client Grid */}
@@ -248,16 +255,11 @@ const Index = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <div className="flex items-center gap-4 mb-2">
-              {clientToDelete && (
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={clientToDelete.avatar} />
-                  <AvatarFallback>{clientToDelete.firstName[0]}{clientToDelete.lastName[0]}</AvatarFallback>
-                </Avatar>
-              )}
+
               <div>
                 <AlertDialogTitle>Delete Client</AlertDialogTitle>
                 <AlertDialogDescription className="mt-1">
-                  {clientToDelete?.firstName} {clientToDelete?.lastName}
+              
                 </AlertDialogDescription>
               </div>
             </div>

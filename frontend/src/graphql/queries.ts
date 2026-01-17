@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GET_CLIENTS_QUERY = gql`
-  query getClients($page: Int, $limit: Int, $search: String, $status: String) {
-    getClients(page: $page, limit: $limit, search: $search, status: $status) {
+  query getClients($input: FetchClientsInput) {
+    getClients(input: $input) {
       clients {
         id
         name
@@ -15,6 +15,38 @@ export const GET_CLIENTS_QUERY = gql`
       total
       totalPages
       currentPage
+    }
+  }
+`;
+
+export const GET_DIETS_QUERY = gql`
+  query GetDiets {
+    getDiets {
+      name
+      meals {
+        time
+        protein
+        name
+        fats
+        description
+        carbs
+        calories
+        _id
+      }
+      description
+      _id
+    }
+  }
+`;
+
+export const GET_MACROS_QUERY = gql`
+  query GetMacros($name: String!) {
+    getMacros(name: $name) {
+      name
+      calories
+      protein
+      carbs
+      fats
     }
   }
 `;

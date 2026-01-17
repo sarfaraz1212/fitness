@@ -15,9 +15,12 @@ export class UserRepository {
         page: number = 1,
         limit: number = 8,
         search?: string,
-        status?: string
+        status?: string,
+        onboardingFilter?: boolean
     ): Promise<{ clients: IUser[], total: number, totalPages: number, currentPage: number }> {
         const query: any = { ...condition };
+
+        console.log("****",search);
 
         if (search) {
             query.$or = [
@@ -26,10 +29,10 @@ export class UserRepository {
             ];
         }
 
-        if (status && status !== 'all') {
-            query.is_onboarded = status === 'active';
+        if (typeof onboardingFilter === 'boolean') {
+            query.is_onboarded = onboardingFilter;
         }
-
+        
         const skip = (page - 1) * limit;
 
         const [clients, total] = await Promise.all([
