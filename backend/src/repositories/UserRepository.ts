@@ -6,6 +6,10 @@ export class UserRepository {
         return await user.save();
     }
 
+    static async find(Id:string){
+        return await User.findById(Id);
+    }
+
     static async get(condition: any): Promise<IUser[]> {
         return await User.find(condition).populate('onboarding');
     }

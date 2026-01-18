@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DietPlanCard from "./components/DietPlanCard";
 import {
   ArrowLeft,
   Pencil,
@@ -106,7 +107,7 @@ const ClientDetail = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Clients
           </Button>
-          
+
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
             <div className="relative">
               <Avatar className="w-28 h-28 border-4 border-white/20 shadow-2xl">
@@ -117,7 +118,7 @@ const ClientDetail = () => {
               </Avatar>
               <span className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-indigo-600 ${client.status === "active" ? "bg-emerald-500" : "bg-gray-400"}`} />
             </div>
-            
+
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-3 mb-2">
                 <h1 className="text-3xl md:text-4xl font-bold text-white">
@@ -294,6 +295,8 @@ const ClientDetail = () => {
               </Card>
             </div>
 
+            <DietPlanCard client={client} />
+
             {/* Notes */}
             <Card className="border-0 shadow-lg bg-white dark:bg-gray-900">
               <CardHeader>
@@ -359,18 +362,16 @@ const ClientDetail = () => {
                   {sessions.map((session, index) => (
                     <div
                       key={index}
-                      className={`flex items-center justify-between p-4 rounded-xl transition-colors ${
-                        session.status === "upcoming" 
-                          ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800" 
-                          : "bg-muted/50 hover:bg-muted"
-                      }`}
+                      className={`flex items-center justify-between p-4 rounded-xl transition-colors ${session.status === "upcoming"
+                        ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800"
+                        : "bg-muted/50 hover:bg-muted"
+                        }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          session.status === "upcoming" 
-                            ? "bg-gradient-to-br from-blue-500 to-indigo-600" 
-                            : "bg-muted"
-                        }`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${session.status === "upcoming"
+                          ? "bg-gradient-to-br from-blue-500 to-indigo-600"
+                          : "bg-muted"
+                          }`}>
                           <Dumbbell className={`w-6 h-6 ${session.status === "upcoming" ? "text-white" : "text-muted-foreground"}`} />
                         </div>
                         <div>
@@ -381,8 +382,8 @@ const ClientDetail = () => {
                         </div>
                       </div>
                       <Badge className={
-                        session.status === "upcoming" 
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300" 
+                        session.status === "upcoming"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
                           : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
                       }>
                         {session.status === "upcoming" ? "Upcoming" : "Completed"}
@@ -410,7 +411,7 @@ const ClientDetail = () => {
                     </div>
                     <h3 className="text-xl font-semibold text-foreground mb-2">Excellent Progress!</h3>
                     <p className="text-muted-foreground max-w-md">
-                      {client.firstName} is making great progress toward their goals. 
+                      {client.firstName} is making great progress toward their goals.
                       Keep up the excellent work with consistent training sessions.
                     </p>
                   </div>

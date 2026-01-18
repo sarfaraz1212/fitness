@@ -14,6 +14,7 @@ import { DeleteWorkoutAction } from '../../actions/trainer/DeleteWorkoutAction';
 import { AddExerciseAction } from '../../actions/trainer/AddExerciseAction';
 import { UpdateExerciseAction } from '../../actions/trainer/UpdateExerciseAction';
 import { DeleteExerciseAction } from '../../actions/trainer/DeleteExerciseAction';
+import { AssignDietAction } from '../../actions/trainer/AssignDietAction';
 
 
 
@@ -184,6 +185,13 @@ export const trainerResolvers = {
             return await action.execute({
                 workoutId: args.workoutId,
                 exerciseId: args.exerciseId
+            });
+        },
+        assignDiet: async (_: any, args: any, context: any) => {
+            const action = new AssignDietAction();
+            return await action.execute({
+                dietId: args.dietId,
+                clientId: args.clientId
             });
         }
     },

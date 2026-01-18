@@ -133,6 +133,11 @@ export const trainerTypeDefs = gql`
     fats: Float!
   }
 
+  type DeleteMealResponse{
+    dietId: String!
+    mealId: String!
+  }
+
   type Query {
     getClients(input: FetchClientsInput): PaginatedClientsResponse
     getDiets(input: FetchDietsInput): PaginatedDietsResponse!
@@ -140,10 +145,6 @@ export const trainerTypeDefs = gql`
     getWorkouts(input: FetchWorkoutsInput): PaginatedWorkoutsResponse!
   }
 
-  type DeleteMealResponse{
-    dietId: String!
-    mealId: String!
-  }
 
   type Mutation {
     createDiet(input: CreateDietInput!): Diet!
@@ -158,5 +159,6 @@ export const trainerTypeDefs = gql`
     addExercise(workoutId: String!, input: ExerciseInput!): Workout!
     updateExercise(workoutId: String!, exerciseId: String!, input: ExerciseInput!): Workout!
     deleteExercise(workoutId: String!, exerciseId: String!): Workout!
+    assignDiet(dietId: String!,clientId:String!):Diet!
   }
 `;

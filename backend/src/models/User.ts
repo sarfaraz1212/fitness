@@ -11,6 +11,7 @@ export interface IUser {
   is_verified: boolean;
   is_onboarded: boolean;
   assigned_trainer?: Types.ObjectId | null;
+  assigned_diet?: Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
   onboarding?: IOnboarding;
@@ -35,6 +36,11 @@ const UserSchema = new Schema<IUserDocument>(
     assigned_trainer: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      default: null,
+    },
+    assigned_diet: {
+      type: Schema.Types.ObjectId,
+      ref: "Diet",
       default: null,
     },
   },

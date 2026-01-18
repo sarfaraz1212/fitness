@@ -11,6 +11,10 @@ export class DietRepository {
         return Diet.find({ addedBy });
     }
 
+    static async find(dietId: string) {
+        return Diet.findById(dietId);
+    }
+
     static async getPaginated(
         condition: any,
         page: number = 1,
