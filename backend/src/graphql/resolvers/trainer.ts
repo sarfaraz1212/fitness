@@ -15,6 +15,7 @@ import { AddExerciseAction } from '../../actions/trainer/AddExerciseAction';
 import { UpdateExerciseAction } from '../../actions/trainer/UpdateExerciseAction';
 import { DeleteExerciseAction } from '../../actions/trainer/DeleteExerciseAction';
 import { AssignDietAction } from '../../actions/trainer/AssignDietAction';
+import { UnassignDietAction } from '../../actions/trainer/UnassignDietAction';
 
 
 
@@ -191,6 +192,12 @@ export const trainerResolvers = {
             const action = new AssignDietAction();
             return await action.execute({
                 dietId: args.dietId,
+                clientId: args.clientId
+            });
+        },
+        unassignDiet: async (_: any, args: any, context: any) => {
+            const action = new UnassignDietAction();
+            return await action.execute({
                 clientId: args.clientId
             });
         }

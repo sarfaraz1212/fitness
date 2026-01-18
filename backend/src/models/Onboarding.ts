@@ -12,6 +12,7 @@ export interface IOnboarding extends Document {
   blood_group: string;
   weight: number;
   height: number;
+  target_weight?: number;
   body_fat?: number;
   bmi?: number;
   fitness_level: 'beginner' | 'intermediate' | 'advanced';
@@ -26,6 +27,8 @@ export interface IOnboarding extends Document {
   notes: string;
   diet_preferences: any;
   fitness_goals: any;
+  address?: string;
+  phone_number?: string;
   profile_image: string;
   createdAt: Date;
   updatedAt: Date;
@@ -47,6 +50,7 @@ const OnboardingSchema: Schema = new Schema(
     blood_group: { type: String },
     weight: { type: Number },
     height: { type: Number },
+    target_weight: { type: Number },
     body_fat: { type: Number },
     bmi: { type: Number },
     fitness_level: { type: String, enum: ['beginner', 'intermediate', 'advanced'] },
@@ -61,6 +65,8 @@ const OnboardingSchema: Schema = new Schema(
     notes: { type: String },
     diet_preferences: { type: Schema.Types.Mixed },
     fitness_goals: { type: Schema.Types.Mixed },
+    address: { type: String },
+    phone_number: { type: String },
     profile_image: { type: String },
   },
   { timestamps: true }

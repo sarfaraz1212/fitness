@@ -170,4 +170,28 @@ export const DELETE_EXERCISE_MUTATION = gql`
   }
 `;
 
+export const ASSIGN_DIET_MUTATION = gql`
+  mutation AssignDiet($dietId: String!, $clientId: String!) {
+    assignDiet(dietId: $dietId, clientId: $clientId) {
+      _id
+      name
+      description
+      meals {
+        _id
+        name
+        calories
+      }
+    }
+  }
+`;
+
+export const UNASSIGN_DIET_MUTATION = gql`
+  mutation UnassignDiet($clientId: String!) {
+    unassignDiet(clientId: $clientId) {
+      id
+      name
+    }
+  }
+`;
+
 

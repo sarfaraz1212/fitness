@@ -19,6 +19,7 @@ export const userTypeDefs = gql`
     is_verified: Boolean!
     is_onboarded: Boolean!
     onboarding: Onboarding
+    assigned_diet: Diet
     createdAt: String!
     updatedAt: String!
   }

@@ -160,5 +160,6 @@ export const trainerTypeDefs = gql`
     updateExercise(workoutId: String!, exerciseId: String!, input: ExerciseInput!): Workout!
     deleteExercise(workoutId: String!, exerciseId: String!): Workout!
     assignDiet(dietId: String!,clientId:String!):Diet!
+    unassignDiet(clientId: String!): User!
   }
 `;

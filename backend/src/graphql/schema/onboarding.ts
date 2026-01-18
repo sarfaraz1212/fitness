@@ -18,6 +18,7 @@ export const onboardingTypeDefs = gql`
     blood_group: String
     weight: Float
     height: Float
+    target_weight: Float
     body_fat: Float
     bmi: Float
     fitness_level: String
@@ -32,6 +33,9 @@ export const onboardingTypeDefs = gql`
     notes: String
     diet_preferences: String
     fitness_goals: [String]
+    address: String
+    phone_number: String
+    date_of_birth: String
     profile_image: String
     createdAt: String!
     updatedAt: String!

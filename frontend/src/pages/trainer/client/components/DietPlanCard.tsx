@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchDiets } from "@/lib/React-query/queryFunction";
+import React, { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchDiets, assignDiet, createDiet, unassignDiet } from "@/lib/React-query/queryFunction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,17 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
     Utensils,
     Plus,
     Check,
@@ -27,16 +38,16 @@ import {
 } from "lucide-react";
 
 interface DietPlanCardProps {
-    client: {
-        firstName: string;
-    };
+    client: any;
 }
 
 const DietPlanCard: React.FC<DietPlanCardProps> = ({ client }) => {
+
+    const queryClient = useQueryClient();
     const [dietDialogOpen, setDietDialogOpen] = useState(false);
     const [dietMode, setDietMode] = useState<"existing" | "new">("existing");
     const [selectedDietId, setSelectedDietId] = useState("");
-    const [assignedDiet, setAssignedDiet] = useState<any>(null);
+    const [assignedDiet, setAssignedDiet] = useState<any>(client.assigned_diet || null);
     const [newDiet, setNewDiet] = useState({
         name: "",
         calories: "",
@@ -44,10 +55,46 @@ const DietPlanCard: React.FC<DietPlanCardProps> = ({ client }) => {
         description: ""
     });
 
-    
+    useEffect(() => {
+        if (client.assigned_diet) {
+            setAssignedDiet(client.assigned_diet);
+        }
+    }, [client.assigned_diet]);
+
+
     const { data: dietsData, isLoading: loadingDiets } = useQuery({
         queryKey: ["diets", 1, 10, "", ""],
         queryFn: () => fetchDiets({ page: 1, limit: 10 })
+    });
+
+    const assignDietMutation = useMutation({
+        mutationFn: ({ dietId, clientId }: { dietId: string; clientId: string }) => assignDiet(dietId, clientId),
+        onSuccess: (data) => {
+            setAssignedDiet(data);
+            setDietDialogOpen(false);
+            queryClient.invalidateQueries({ queryKey: ['client', client.id] });
+        }
+    });
+
+    const createAndAssignMutation = useMutation({
+        mutationFn: async (input: { name: string; description?: string; clientId: string }) => {
+            const diet = await createDiet({ name: input.name, description: input.description });
+            return await assignDiet(diet._id, input.clientId);
+        },
+        onSuccess: (data) => {
+            setAssignedDiet(data);
+            setDietDialogOpen(false);
+            queryClient.invalidateQueries({ queryKey: ['client', client.id] });
+            queryClient.invalidateQueries({ queryKey: ['diets'] });
+        }
+    });
+
+    const unassignDietMutation = useMutation({
+        mutationFn: (clientId: string) => unassignDiet(clientId),
+        onSuccess: () => {
+            setAssignedDiet(null);
+            queryClient.invalidateQueries({ queryKey: ['client', client.id] });
+        }
     });
 
     const existingDietPlans = dietsData?.diets?.map((d: any) => ({
@@ -58,29 +105,20 @@ const DietPlanCard: React.FC<DietPlanCardProps> = ({ client }) => {
         meals: d.meals?.length || 0,
     })) || [];
 
-    const handleAssignDiet = () => {
+    const handleAssignDiet = async () => {
         if (dietMode === "existing") {
-            const plan = existingDietPlans.find((p: any) => p.id === selectedDietId);
-            if (plan) {
-                setAssignedDiet({
-                    ...plan,
-                    description: plan.description || "Assigned from library"
-                });
-            }
+            await assignDietMutation.mutateAsync({ dietId: selectedDietId, clientId: client.id });
         } else {
-            setAssignedDiet({
-                id: Math.random().toString(),
+            await createAndAssignMutation.mutateAsync({
                 name: newDiet.name,
-                calories: newDiet.calories,
-                meals: newDiet.meals,
-                description: newDiet.description
+                description: newDiet.description,
+                clientId: client.id
             });
         }
-        setDietDialogOpen(false);
     };
 
-    const handleRemoveDiet = () => {
-        setAssignedDiet(null);
+    const handleRemoveDiet = async () => {
+        await unassignDietMutation.mutateAsync(client.id);
     };
 
     return (
@@ -119,7 +157,7 @@ const DietPlanCard: React.FC<DietPlanCardProps> = ({ client }) => {
                                 Assign Diet Plan
                             </DialogTitle>
                             <DialogDescription>
-                                Choose an existing diet plan or create a new one for {client.firstName}.
+                                Choose an existing diet plan or create a new one for {client.name}.
                             </DialogDescription>
                         </DialogHeader>
 
@@ -274,24 +312,45 @@ const DietPlanCard: React.FC<DietPlanCardProps> = ({ client }) => {
                             </div>
                             <div className="flex-1">
                                 <h4 className="font-semibold text-foreground text-lg">{assignedDiet.name}</h4>
-                                <p className="text-sm text-muted-foreground mt-1">{assignedDiet.description}</p>
+                                {assignedDiet.description && <p className="text-sm text-muted-foreground mt-1">{assignedDiet.description}</p>}
                                 <div className="flex gap-4 mt-3">
                                     <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 border-0">
-                                        {assignedDiet.calories} kcal/day
+                                        {(assignedDiet.calories || assignedDiet.meals?.reduce((acc: number, m: any) => acc + (m.calories || 0), 0) || 0)} kcal/day
                                     </Badge>
                                     <Badge variant="outline" className="border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300">
-                                        {assignedDiet.meals} meals/day
+                                        {(typeof assignedDiet.meals === 'number' ? assignedDiet.meals : (assignedDiet.meals?.length || 0))} meals/day
                                     </Badge>
                                 </div>
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleRemoveDiet}
-                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            >
-                                <X className="w-5 h-5" />
-                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Remove Diet Plan?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Are you sure you want to remove the diet plan "{assignedDiet.name}" from {client.name}?
+                                            This action can be undone later by re-assigning a plan.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={handleRemoveDiet}
+                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        >
+                                            Remove Plan
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         </div>
                     </div>
                 ) : (
@@ -301,7 +360,7 @@ const DietPlanCard: React.FC<DietPlanCardProps> = ({ client }) => {
                         </div>
                         <p className="text-muted-foreground mb-2">No diet plan assigned</p>
                         <p className="text-sm text-muted-foreground/70">
-                            Click "Assign Diet" to set up a nutrition plan for {client.firstName}.
+                            Click "Assign Diet" to set up a nutrition plan for {client.name}.
                         </p>
                     </div>
                 )}

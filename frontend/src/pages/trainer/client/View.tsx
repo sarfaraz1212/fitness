@@ -1,4 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { fetchClient } from "@/lib/React-query/queryFunction";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,7 +15,6 @@ import {
   Calendar,
   Target,
   TrendingUp,
-  Clock,
   Mail,
   Phone,
   MapPin,
@@ -36,31 +37,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Loader2 } from "lucide-react";
 
-// Mock client data
-const mockClient = {
-  id: "1",
-  firstName: "Sarah",
-  lastName: "Johnson",
-  email: "sarah.johnson@email.com",
-  phone: "+1 234 567 890",
-  avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300",
-  dateOfBirth: "March 15, 1990",
-  gender: "Female",
-  address: "123 Fitness Lane, New York, NY 10001",
-  membershipType: "vip",
-  status: "active",
-  goals: ["Weight Loss", "Endurance", "Core Strength"],
-  dietPreference: "Low Carb",
-  height: 165,
-  currentWeight: 62,
-  targetWeight: 58,
-  sessionsCompleted: 24,
-  nextSession: "Today, 5:00 PM",
-  progressPercentage: 85,
-  joinedDate: "January 15, 2024",
-  notes: "Sarah prefers morning sessions. She has a minor knee issue, so avoid high-impact exercises. Very motivated and consistent with her routine.",
-};
+// Sessions data fallback
 
 const sessions = [
   { date: "Today", time: "5:00 PM", type: "Strength Training", status: "upcoming", duration: "60 min" },
@@ -72,9 +51,35 @@ const sessions = [
 
 const ClientDetail = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const client = mockClient; // In real app, fetch by id
 
+  const navigate = useNavigate();
+  const { data: client, isLoading, isError } = useQuery({
+    queryKey: ['client', id],
+    queryFn: () => fetchClient(id as string),
+    enabled: !!id
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
+          <p className="text-lg font-medium text-muted-foreground">Loading client profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !client) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-900">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Client not found</h2>
+          <Button onClick={() => navigate("/trainer/clients")}>Back to Clients</Button>
+        </div>
+      </div>
+    );
+  }
   const getMembershipBadge = (type: string) => {
     switch (type) {
       case "vip":
@@ -87,10 +92,10 @@ const ClientDetail = () => {
   };
 
   const stats = [
-    { label: "Sessions", value: client.sessionsCompleted, icon: Dumbbell, color: "from-blue-500 to-indigo-500" },
-    { label: "Progress", value: `${client.progressPercentage}%`, icon: TrendingUp, color: "from-emerald-500 to-teal-500" },
-    { label: "Member Since", value: "3 months", icon: Calendar, color: "from-purple-500 to-pink-500" },
-    { label: "Next Session", value: "Today", icon: Clock, color: "from-amber-500 to-orange-500" },
+    { label: "Sessions", value: 0, icon: Dumbbell, color: "from-blue-500 to-indigo-500" },
+    { label: "Progress", value: `0%`, icon: TrendingUp, color: "from-emerald-500 to-teal-500" },
+    { label: "Weight", value: `${client.onboarding?.weight || "--"}kg`, icon: Scale, color: "from-purple-500 to-pink-500" },
+    { label: "Height", value: `${client.onboarding?.height || "--"}cm`, icon: Ruler, color: "from-amber-500 to-orange-500" },
   ];
 
   return (
@@ -111,20 +116,20 @@ const ClientDetail = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
             <div className="relative">
               <Avatar className="w-28 h-28 border-4 border-white/20 shadow-2xl">
-                <AvatarImage src={client.avatar} />
+                <AvatarImage src={client.onboarding?.profile_image} />
                 <AvatarFallback className="bg-white/20 text-white text-3xl font-bold">
-                  {client.firstName[0]}{client.lastName[0]}
+                  {client.name?.[0] || 'C'}
                 </AvatarFallback>
               </Avatar>
-              <span className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-indigo-600 ${client.status === "active" ? "bg-emerald-500" : "bg-gray-400"}`} />
+              <span className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-indigo-600 ${client.is_onboarded ? "bg-emerald-500" : "bg-gray-400"}`} />
             </div>
 
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-3 mb-2">
                 <h1 className="text-3xl md:text-4xl font-bold text-white">
-                  {client.firstName} {client.lastName}
+                  {client.name}
                 </h1>
-                {getMembershipBadge(client.membershipType)}
+                {getMembershipBadge("vip")}
               </div>
               <p className="text-white/80 flex items-center gap-2 mb-1">
                 <Mail className="w-4 h-4" />
@@ -132,7 +137,7 @@ const ClientDetail = () => {
               </p>
               <p className="text-white/80 flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                {client.phone}
+                {client.onboarding?.phone_number || "No phone provided"}
               </p>
             </div>
 
@@ -203,21 +208,27 @@ const ClientDetail = () => {
                     <Calendar className="w-5 h-5 text-muted-foreground" />
                     <div>
                       <p className="text-xs text-muted-foreground">Date of Birth</p>
-                      <p className="font-medium text-foreground">{client.dateOfBirth}</p>
+                      <p className="font-medium text-foreground">
+                        {client.onboarding?.date_of_birth
+                          ? (!isNaN(Number(client.onboarding.date_of_birth))
+                            ? new Date(Number(client.onboarding.date_of_birth)).toLocaleDateString()
+                            : client.onboarding.date_of_birth)
+                          : "--"}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                     <User className="w-5 h-5 text-muted-foreground" />
                     <div>
                       <p className="text-xs text-muted-foreground">Gender</p>
-                      <p className="font-medium text-foreground">{client.gender}</p>
+                      <p className="font-medium text-foreground">{client.onboarding?.gender || "--"}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                     <MapPin className="w-5 h-5 text-muted-foreground" />
                     <div>
                       <p className="text-xs text-muted-foreground">Address</p>
-                      <p className="font-medium text-foreground text-sm">{client.address}</p>
+                      <p className="font-medium text-foreground text-sm">{client.onboarding?.address || "No address provided"}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -236,31 +247,31 @@ const ClientDetail = () => {
                     <Ruler className="w-5 h-5 text-muted-foreground" />
                     <div>
                       <p className="text-xs text-muted-foreground">Height</p>
-                      <p className="font-medium text-foreground">{client.height} cm</p>
+                      <p className="font-medium text-foreground">{client.onboarding?.height || "--"} cm</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                     <Scale className="w-5 h-5 text-muted-foreground" />
                     <div>
                       <p className="text-xs text-muted-foreground">Current Weight</p>
-                      <p className="font-medium text-foreground">{client.currentWeight} kg</p>
+                      <p className="font-medium text-foreground">{client.onboarding?.weight || "--"} kg</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                     <Target className="w-5 h-5 text-muted-foreground" />
                     <div>
                       <p className="text-xs text-muted-foreground">Target Weight</p>
-                      <p className="font-medium text-foreground">{client.targetWeight} kg</p>
+                      <p className="font-medium text-foreground">{client.onboarding?.target_weight || "--"} kg</p>
                     </div>
                   </div>
                   <div className="pt-2">
                     <div className="flex items-center justify-between text-sm mb-2">
                       <span className="text-muted-foreground">Weight Progress</span>
                       <span className="font-semibold text-emerald-600">
-                        {Math.round(((70 - client.currentWeight) / (70 - client.targetWeight)) * 100)}%
+                        {client.onboarding?.target_weight ? "45%" : "0%"}
                       </span>
                     </div>
-                    <Progress value={Math.round(((70 - client.currentWeight) / (70 - client.targetWeight)) * 100)} className="h-2" />
+                    <Progress value={client.onboarding?.target_weight ? 45 : 0} className="h-2" />
                   </div>
                 </CardContent>
               </Card>
@@ -277,18 +288,18 @@ const ClientDetail = () => {
                   <div>
                     <p className="text-xs text-muted-foreground mb-2">Fitness Goals</p>
                     <div className="flex flex-wrap gap-2">
-                      {client.goals.map((goal, idx) => (
+                      {client.onboarding?.fitness_goals?.map((goal: string, idx: number) => (
                         <Badge key={idx} className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                           {goal}
                         </Badge>
-                      ))}
+                      )) || <p className="text-sm text-muted-foreground">No goals set</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                     <Heart className="w-5 h-5 text-muted-foreground" />
                     <div>
                       <p className="text-xs text-muted-foreground">Diet Preference</p>
-                      <p className="font-medium text-foreground">{client.dietPreference}</p>
+                      <p className="font-medium text-foreground">{client.onboarding?.diet_preferences || "Not specified"}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -303,7 +314,7 @@ const ClientDetail = () => {
                 <CardTitle className="text-lg">Trainer Notes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground leading-relaxed">{client.notes}</p>
+                <p className="text-muted-foreground leading-relaxed">{client.onboarding?.notes || "No notes available"}</p>
               </CardContent>
             </Card>
 
@@ -329,7 +340,7 @@ const ClientDetail = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete {client.firstName}'s profile
+                          This action cannot be undone. This will permanently delete {client.name}'s profile
                           and all associated data including sessions and progress history.
                         </AlertDialogDescription>
                       </AlertDialogHeader>

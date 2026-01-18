@@ -82,3 +82,56 @@ export const GET_WORKOUTS_QUERY = gql`
   }
 `;
 
+
+export const GET_USER_QUERY = gql`
+  query Query($userId: ID!) {
+    user(id: $userId) {
+      id
+      email
+      createdAt
+      name
+      onboarding {
+        id
+        age
+        alcohol_frequency
+        blood_group
+        bmi
+        body_fat
+        createdAt
+        diet_preferences
+        dob
+        exercise_frequency
+        expires_at
+        fitness_goals
+        fitness_level
+        gender
+        height
+        medical_conditions
+        notes
+        profile_image
+        sleep_hours
+        smoking_frequency
+        status
+        stress_level
+        training_time
+        updatedAt
+        weight
+        work_environment
+        address
+        phone_number
+        date_of_birth
+        target_weight
+      }
+      assigned_diet {
+        _id
+        name
+        description
+        meals {
+          _id
+          name
+          calories
+        }
+      }
+    }
+  }
+`;

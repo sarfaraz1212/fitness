@@ -9,7 +9,7 @@ export const userResolvers = {
       return await User.find();
     },
     user: async (_: any, { id }: { id: string }): Promise<IUser | null> => {
-      return await User.findById(id);
+      return await User.findById(id).populate("onboarding").populate("assigned_diet");
     },
   },
   Mutation: {

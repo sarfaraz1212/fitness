@@ -1,5 +1,6 @@
 import { client } from '@/lib/apollo';
-import { GET_CLIENTS_QUERY, GET_DIETS_QUERY, GET_WORKOUTS_QUERY } from '@/graphql/queries';
+import { GET_CLIENTS_QUERY, GET_DIETS_QUERY, GET_WORKOUTS_QUERY, GET_USER_QUERY as GET_CLIENT_QUERY } from '@/graphql/queries';
+import { ASSIGN_DIET_MUTATION, CREATE_DIET_MUTATION, UNASSIGN_DIET_MUTATION } from '@/graphql/mutations';
 
 export interface FetchClientsParams {
     page?: number;
@@ -64,4 +65,41 @@ export const fetchWorkouts = async (params: FetchWorkoutsParams = {}): Promise<a
         totalPages: 0,
         currentPage: params.page || 1,
     };
+};
+
+export const fetchClient = async (id: string): Promise<any> => {
+    const { data } = await client.query({
+        query: GET_CLIENT_QUERY,
+        variables: { userId: id },
+        fetchPolicy: 'network-only',
+    });
+
+    return (data as any)?.user;
+};
+
+export const assignDiet = async (dietId: string, clientId: string): Promise<any> => {
+    const { data } = await client.mutate({
+        mutation: ASSIGN_DIET_MUTATION,
+        variables: { dietId, clientId },
+    });
+
+    return (data as any)?.assignDiet;
+};
+
+export const createDiet = async (input: { name: string; description?: string }): Promise<any> => {
+    const { data } = await client.mutate({
+        mutation: CREATE_DIET_MUTATION,
+        variables: { input },
+    });
+
+    return (data as any)?.createDiet;
+};
+
+export const unassignDiet = async (clientId: string): Promise<any> => {
+    const { data } = await client.mutate({
+        mutation: UNASSIGN_DIET_MUTATION,
+        variables: { clientId },
+    });
+
+    return (data as any)?.unassignDiet;
 };
