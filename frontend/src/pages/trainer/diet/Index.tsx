@@ -38,7 +38,7 @@ const Index: React.FC = () => {
 
   const {
     dietPlans,
-    dietsData, // Actually dietsData is already in scope from useDiet refactor? No, I need to check useDiet return.
+    dietsData, 
     loadingPlans,
     isLoading,
     formData,

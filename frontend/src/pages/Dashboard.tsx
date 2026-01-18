@@ -2,7 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import WeightCheckInModal from "@/components/client/WeightCheckInModal";  
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useEffect,useState } from "react";
+import { client } from '@/lib/apollo';
+import { DAILY_WEIGHT_CHECK_QUERY } from '@/graphql/queries';
 import {
   Dumbbell,
   Flame,
@@ -25,10 +29,30 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
 
+  const [openDailyWeightModal, setOpenDailyWeightModal] = useState(false);
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+
+  useEffect(() => {
+    const apiCall = async () => {
+      const response = await client.query({
+        query: DAILY_WEIGHT_CHECK_QUERY,
+        fetchPolicy: 'network-only',
+      });
+
+      if (!response.data.checkDailyWeightIn) {
+        setOpenDailyWeightModal(true);
+      }
+    };
+    apiCall();
+  }, [])
+  
+
+  async function submitWeight(weight: number) {
+    setOpenDailyWeightModal(false);
+  }
 
   const stats = [
     { label: "Calories Burned", value: "1,847", icon: Flame, color: "from-orange-500 to-red-500", progress: 73 },
@@ -249,6 +273,13 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </main>
+
+      <WeightCheckInModal
+        open={openDailyWeightModal}
+        onClose={() => setOpenDailyWeightModal(false)}
+        onSubmit={submitWeight}
+      />
+
     </div>
   );
 };

@@ -135,3 +135,9 @@ export const GET_USER_QUERY = gql`
     }
   }
 `;
+
+export const DAILY_WEIGHT_CHECK_QUERY = gql`
+  query Query {
+    checkDailyWeightIn
+  }
+`;

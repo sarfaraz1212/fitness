@@ -1,5 +1,11 @@
 import { client } from '@/lib/apollo';
-import { GET_CLIENTS_QUERY, GET_DIETS_QUERY, GET_WORKOUTS_QUERY, GET_USER_QUERY as GET_CLIENT_QUERY } from '@/graphql/queries';
+import {
+     GET_CLIENTS_QUERY, 
+     GET_DIETS_QUERY, 
+     GET_WORKOUTS_QUERY, 
+     GET_USER_QUERY as GET_CLIENT_QUERY,
+     DAILY_WEIGHT_CHECK_QUERY 
+} from '@/graphql/queries';
 import { ASSIGN_DIET_MUTATION, CREATE_DIET_MUTATION, UNASSIGN_DIET_MUTATION } from '@/graphql/mutations';
 
 export interface FetchClientsParams {
@@ -103,3 +109,4 @@ export const unassignDiet = async (clientId: string): Promise<any> => {
 
     return (data as any)?.unassignDiet;
 };
+
