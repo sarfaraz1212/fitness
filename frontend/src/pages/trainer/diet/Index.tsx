@@ -197,7 +197,7 @@ const Index: React.FC = () => {
 
                         <PlanStats totals={totals} />
 
-                        <div className="space-y-2">
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                           {plan.meals.map((meal) => (
                             <MealCard
                               key={meal.id}

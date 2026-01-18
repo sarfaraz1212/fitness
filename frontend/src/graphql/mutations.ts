@@ -56,7 +56,7 @@ export const CREATE_MEAL_MUTATION = gql`
   }
 `;
 
-export const DELETE_MEAL =  gql`
+export const DELETE_MEAL = gql`
   mutation DeleteMeal($dietId: String!, $mealId: String!) {
     deleteMeal(dietId: $dietId, mealId: $mealId) {
       dietId
@@ -90,9 +90,83 @@ export const EDIT_DIET_MUTATION = gql`
   }
 `;
 
-export const DELETE_DIET =  gql`
+export const DELETE_DIET = gql`
   mutation Mutation($dietId: String!) {
     deleteDiet(dietId: $dietId)
+  }
+`;
+
+export const CREATE_WORKOUT_MUTATION = gql`
+  mutation CreateWorkout($input: CreateWorkoutInput!) {
+    createWorkout(input: $input) {
+      _id
+      name
+      description
+      createdAt
+    }
+  }
+`;
+
+export const UPDATE_WORKOUT_MUTATION = gql`
+  mutation UpdateWorkout($workoutId: String!, $input: CreateWorkoutInput!) {
+    updateWorkout(workoutId: $workoutId, input: $input) {
+      _id
+      name
+      description
+    }
+  }
+`;
+
+export const DELETE_WORKOUT_MUTATION = gql`
+  mutation DeleteWorkout($workoutId: String!) {
+    deleteWorkout(workoutId: $workoutId)
+  }
+`;
+
+export const ADD_EXERCISE_MUTATION = gql`
+  mutation AddExercise($workoutId: String!, $input: ExerciseInput!) {
+    addExercise(workoutId: $workoutId, input: $input) {
+      _id
+      exercises {
+        _id
+        name
+        sets
+        reps
+        weight
+        duration
+        restTime
+        notes
+      }
+    }
+  }
+`;
+
+export const UPDATE_EXERCISE_MUTATION = gql`
+  mutation UpdateExercise($workoutId: String!, $exerciseId: String!, $input: ExerciseInput!) {
+    updateExercise(workoutId: $workoutId, exerciseId: $exerciseId, input: $input) {
+      _id
+      exercises {
+        _id
+        name
+        sets
+        reps
+        weight
+        duration
+        restTime
+        notes
+      }
+    }
+  }
+`;
+
+export const DELETE_EXERCISE_MUTATION = gql`
+  mutation DeleteExercise($workoutId: String!, $exerciseId: String!) {
+    deleteExercise(workoutId: $workoutId, exerciseId: $exerciseId) {
+      _id
+      exercises {
+        _id
+      }
+    }
   }
 `;
 

@@ -56,3 +56,29 @@ export const GET_MACROS_QUERY = gql`
   }
 `;
 
+export const GET_WORKOUTS_QUERY = gql`
+  query GetWorkouts($input: FetchWorkoutsInput) {
+    getWorkouts(input: $input) {
+      workouts {
+        _id
+        name
+        description
+        exercises {
+          _id
+          name
+          sets
+          reps
+          weight
+          duration
+          restTime
+          notes
+        }
+        createdAt
+      }
+      total
+      totalPages
+      currentPage
+    }
+  }
+`;
+

@@ -16,6 +16,7 @@ import ClientIndex from "./pages/trainer/client/Index";
 import ClientCreate from "./pages/trainer/client/Create";
 import ClientView from "./pages/trainer/client/View";
 import DietView from "./pages/trainer/diet/Index";
+import WorkoutView from "./pages/trainer/workout/Index";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
 
             <Route path="/trainer/clients" element={<ProtectedRoute><ClientIndex /></ProtectedRoute>} />
             <Route path="/trainer/diet-plans" element={<ProtectedRoute><DietView /></ProtectedRoute>} />
+            <Route path="/trainer/workout-plans" element={<ProtectedRoute><WorkoutView /></ProtectedRoute>} />
             <Route path="/trainer/clients/new" element={<ProtectedRoute><ClientCreate /></ProtectedRoute>} />
             <Route path="/trainer/clients/:id" element={<ClientView />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
