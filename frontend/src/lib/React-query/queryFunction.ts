@@ -4,9 +4,9 @@ import {
      GET_DIETS_QUERY, 
      GET_WORKOUTS_QUERY, 
      GET_USER_QUERY as GET_CLIENT_QUERY,
-     DAILY_WEIGHT_CHECK_QUERY 
+     GET_DAILY_WEIGHT_QUERY
 } from '@/graphql/queries';
-import { ASSIGN_DIET_MUTATION, CREATE_DIET_MUTATION, UNASSIGN_DIET_MUTATION } from '@/graphql/mutations';
+import { ASSIGN_DIET_MUTATION, CREATE_DIET_MUTATION, UNASSIGN_DIET_MUTATION, LOG_DAILY_WEIGHT_IN_MUTATION, UPDATE_DAILY_WEIGHT_IN_MUTATION } from '@/graphql/mutations';
 
 export interface FetchClientsParams {
     page?: number;
@@ -108,5 +108,32 @@ export const unassignDiet = async (clientId: string): Promise<any> => {
     });
 
     return (data as any)?.unassignDiet;
+};
+
+export const fetchDailyWeight = async (): Promise<any> => {
+    const { data } = await client.query({
+        query: GET_DAILY_WEIGHT_QUERY,
+        fetchPolicy: 'network-only',
+    });
+
+    return (data as any)?.getDailyWeight ?? null;
+};
+
+export const logDailyWeight = async (weight: number): Promise<any> => {
+    const { data } = await client.mutate({
+        mutation: LOG_DAILY_WEIGHT_IN_MUTATION,
+        variables: { input: { weight, unit: 'KG' } },
+    });
+
+    return (data as any)?.logDailyWeightIn;
+};
+
+export const updateDailyWeight = async (date: string, weight: number, unit: "kg" | "lbs"): Promise<any> => {
+    const { data } = await client.mutate({
+        mutation: UPDATE_DAILY_WEIGHT_IN_MUTATION,
+        variables: { input: { date, weight, unit: unit.toUpperCase() } },
+    });
+
+    return (data as any)?.updateDailyWeightIn;
 };
 

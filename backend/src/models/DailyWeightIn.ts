@@ -2,16 +2,16 @@ import { Schema, model, Types } from 'mongoose';
 
 export interface IDailyWeightIn {
   user: Types.ObjectId;
-  date: Date;              // the day of the weight-in
+  date: Date;             
   weight: number;
   unit: 'kg' | 'lbs';
   createdAt: Date;
-  deletedAt?: Date | null;
+  updatedAt: Date;
 }
 
 const DailyWeightInSchema = new Schema<IDailyWeightIn>(
   {
-    user: {
+    user_id: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
@@ -32,31 +32,22 @@ const DailyWeightInSchema = new Schema<IDailyWeightIn>(
 
     unit: {
       type: String,
-      enum: ['kg', 'lbs'],
+      enum: ['KG', 'LBS'],
       required: true,
-      default: 'kg',
+      default: 'KG',
     },
 
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
   },
   {
     timestamps: {
       createdAt: 'createdAt',
-      updatedAt: false, // usually not needed for weight-ins
+      updatedAt: 'updatedAt',
     },
   }
 );
 
-/**
- * Ensure only ONE weight-in per user per day
- */
-DailyWeightInSchema.index(
-  { user: 1, date: 1 },
-  { unique: true }
-);
+// Create compound unique index on user_id and date
+DailyWeightInSchema.index({ user_id: 1, date: 1 }, { unique: true });
 
 export const DailyWeightIn = model<IDailyWeightIn>(
   'DailyWeightIn',

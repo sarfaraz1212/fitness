@@ -6,7 +6,8 @@ import WeightCheckInModal from "@/components/client/WeightCheckInModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect,useState } from "react";
 import { client } from '@/lib/apollo';
-import { DAILY_WEIGHT_CHECK_QUERY } from '@/graphql/queries';
+import { logDailyWeight, updateDailyWeight } from '@/lib/React-query/queryFunction';
+import { toast } from '@/hooks/use-toast';
 import {
   Dumbbell,
   Flame,
@@ -22,6 +23,7 @@ import {
   LogOut,
   Settings,
   Bell,
+  Scale,
 } from "lucide-react";
 import { useAuthStore } from '@/stores/authStore';
 
@@ -35,23 +37,31 @@ const Dashboard = () => {
     navigate("/login");
   };
 
-  useEffect(() => {
-    const apiCall = async () => {
-      const response = await client.query({
-        query: DAILY_WEIGHT_CHECK_QUERY,
-        fetchPolicy: 'network-only',
-      });
-
-      if (!response.data.checkDailyWeightIn) {
-        setOpenDailyWeightModal(true);
+  async function submitWeight(weight: number, unit: "kg" | "lbs", isUpdate: boolean) {
+    try {
+      if (isUpdate) {
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        await updateDailyWeight(today, weight, unit);
+        toast({
+          title: "Weight Updated! 📊",
+          description: "Your daily weight has been updated.",
+        });
+      } else {
+        await logDailyWeight(weight);
+        toast({
+          title: "Weight Logged! 📊",
+          description: "Your daily weight has been recorded.",
+        });
       }
-    };
-    apiCall();
-  }, [])
-  
-
-  async function submitWeight(weight: number) {
-    setOpenDailyWeightModal(false);
+      setOpenDailyWeightModal(false);
+    } catch (error: any) {
+      const message = error.graphQLErrors?.[0]?.message || error.message || "Failed to log weight.";
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
+    }
   }
 
   const stats = [
@@ -132,13 +142,22 @@ const Dashboard = () => {
               <p className="text-muted-foreground">Let's crush your fitness goals today</p>
             </div>
           </div>
-          <Button
-            onClick={() => navigate("/onboarding")}
-            className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/30"
-          >
-            <Calendar className="w-4 h-4 mr-2" />
-            Update Profile
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setOpenDailyWeightModal(true)}
+              className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white shadow-lg shadow-blue-500/30"
+            >
+              <Scale className="w-4 h-4 mr-2" />
+              Log Weight
+            </Button>
+            <Button
+              onClick={() => navigate("/onboarding")}
+              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/30"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Update Profile
+            </Button>
+          </div>
         </section>
 
         {/* Stats Grid */}
@@ -276,8 +295,9 @@ const Dashboard = () => {
 
       <WeightCheckInModal
         open={openDailyWeightModal}
-        onClose={() => setOpenDailyWeightModal(false)}
+        onOpenChange={setOpenDailyWeightModal}
         onSubmit={submitWeight}
+        onSkip={() => setOpenDailyWeightModal(false)}
       />
 
     </div>

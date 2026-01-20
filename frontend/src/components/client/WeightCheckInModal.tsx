@@ -8,14 +8,14 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Scale, Clock, X } from "lucide-react";
+import { Scale, X } from "lucide-react";
+import { fetchDailyWeight } from '@/lib/React-query/queryFunction';
 
 interface WeightCheckInModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (weight: number) => void;
+  onSubmit: (weight: number, unit: "kg" | "lbs", isUpdate: boolean) => Promise<void>;
   onSkip: () => void;
-  onDelay: () => void;
 }
 
 const WeightCheckInModal = ({
@@ -23,16 +23,45 @@ const WeightCheckInModal = ({
   onOpenChange,
   onSubmit,
   onSkip,
-  onDelay,
 }: WeightCheckInModalProps) => {
   const [weight, setWeight] = useState("");
   const [unit, setUnit] = useState<"kg" | "lbs">("kg");
+  const [loading, setLoading] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (open) {
+      setLoading(true);
+      fetchDailyWeight().then((dailyWeight) => {
+        if (dailyWeight && dailyWeight.weight !== null) {
+          setWeight(dailyWeight.weight.toString());
+          setUnit(dailyWeight.unit.toLowerCase() as "kg" | "lbs");
+          setIsUpdate(true);
+        } else {
+          setWeight("");
+          setUnit("kg");
+          setIsUpdate(false);
+        }
+        setLoading(false);
+      }).catch(() => {
+        setWeight("");
+        setUnit("kg");
+        setIsUpdate(false);
+        setLoading(false);
+      });
+    }
+  }, [open]);
+
+  const handleSubmit = async () => {
     const weightValue = parseFloat(weight);
     if (!isNaN(weightValue) && weightValue > 0) {
-      onSubmit(weightValue);
-      setWeight("");
+      try {
+        await onSubmit(weightValue, unit, isUpdate);
+        // setWeight("");
+      } catch (error) {
+        // Don't clear input on error - let user retry
+        console.error("Failed to submit weight:", error);
+      }
     }
   };
 
@@ -91,25 +120,17 @@ const WeightCheckInModal = ({
 
           <Button
             onClick={handleSubmit}
-            disabled={!weight || parseFloat(weight) <= 0}
+            disabled={!weight || parseFloat(weight) <= 0 || loading}
             className="w-full h-12 text-base"
           >
-            Log Weight
+            {isUpdate ? "Update Weight" : "Log Weight"}
           </Button>
 
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={onDelay}
-              className="flex-1 gap-2"
-            >
-              <Clock className="h-4 w-4" />
-              Remind in 10 min
-            </Button>
+          <div className="flex justify-center">
             <Button
               variant="ghost"
               onClick={onSkip}
-              className="flex-1 gap-2 text-muted-foreground"
+              className="gap-2 text-muted-foreground"
             >
               <X className="h-4 w-4" />
               Skip today

@@ -12,6 +12,8 @@ import StressLevel from '@/components/onboarding/StressLevel';
 import PreferredTrainingTime from '@/components/onboarding/PreferredTrainingTime';
 import FormSection from '@/components/onboarding/FormSection';
 import { toast } from '@/hooks/use-toast';
+import WeightCheckInModal from "@/components/client/WeightCheckInModal";
+import { logDailyWeight, updateDailyWeight } from '@/lib/React-query/queryFunction';
 
 // Calculate age from DOB
 const calculateAge = (dob: string): number => {
@@ -53,6 +55,7 @@ const Index = () => {
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openWeightModal, setOpenWeightModal] = useState(false);
 
   // Auto-calculate age from DOB
   const calculatedAge = useMemo(() => calculateAge(formData.dob), [formData.dob]);
@@ -168,6 +171,33 @@ const Index = () => {
     });
     
     setIsSubmitting(false);
+  };
+
+  const handleWeightSubmit = async (weight: number, unit: "kg" | "lbs", isUpdate: boolean) => {
+    try {
+      if (isUpdate) {
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        await updateDailyWeight(today, weight, unit);
+        toast({
+          title: "Weight Updated! 📊",
+          description: "Your daily weight has been updated.",
+        });
+      } else {
+        await logDailyWeight(weight);
+        toast({
+          title: "Weight Logged! 📊",
+          description: "Your daily weight has been recorded.",
+        });
+      }
+      setOpenWeightModal(false);
+    } catch (error: any) {
+      const message = error.graphQLErrors?.[0]?.message || error.message || "Failed to log weight.";
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleReset = () => {
@@ -551,6 +581,14 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
             <button
               type="button"
+              onClick={() => setOpenWeightModal(true)}
+              className="btn-outline flex items-center justify-center gap-2"
+            >
+              <Scale className="w-4 h-4" />
+              Log Daily Weight
+            </button>
+            <button
+              type="button"
               onClick={handleReset}
               className="btn-secondary order-2 sm:order-1"
             >
@@ -575,6 +613,13 @@ const Index = () => {
             </button>
           </div>
         </form>
+
+        <WeightCheckInModal
+          open={openWeightModal}
+          onOpenChange={setOpenWeightModal}
+          onSubmit={handleWeightSubmit}
+          onSkip={() => setOpenWeightModal(false)}
+        />
       </div>
     </div>
   );

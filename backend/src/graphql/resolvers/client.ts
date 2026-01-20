@@ -1,25 +1,35 @@
-import { reminderQueue } from '../../queues/reminderQueue';
-
+import { GetDailyWeightInStatusAction } from '../../actions/client/GetDailyWeightInStatusAction';
+import { LogDailyWeightInAction } from '../../actions/client/LogDailyWeightInAction';
+import { GetDailyWeightAction } from '../../actions/client/GetDailyWeightAction';
+import { UpdateDailyWeightInAction } from '../../actions/client/UpdateDailyWeightInAction';
+import GetDailyAssignedDietPlan  from '../../actions/client/GetDailyAssignedDietPlan';
 export const clientResolvers = {
   Query: {
-    checkDailyWeightIn: async (_: any, __: any, context: any): Promise<boolean> => {
-      const action = new GetDailyWeightInStatusAction();
-      return await action.execute({ userId: context.currentUser.id });
+    getDailyWeight: async (_: any, __: any, context: any): Promise<any> => {
+      const action = new GetDailyWeightAction();
+      const record = await action.execute({ userId: context.currentUser.id });
+
+      return record;
     },
+
+    getAssignedDietPlan: async (_:any, __: any, context: any): Promise<boolean> => {
+      
+      const action = new GetDailyAssignedDietPlan();
+      await action.execute({ userId: context.currentUser.id });
+      return true;
+    }
   },
 
   Mutation: {
-    remindWeightIn: async (_: any, { minutesFromNow }: { minutesFromNow: number }, context: any): Promise<boolean> => {
-    
+    logDailyWeightIn: async (_: any, { input }: { input: { weight: number, unit: string } }, context: any): Promise<any> => {
+      const action = new LogDailyWeightInAction();
+      return await action.execute({ userId: context.currentUser.id, weight: input.weight, unit: input.unit });
+    },
 
-   await reminderQueue.add(
-  'daily-weight-in-reminder',
-  { userId: 123 },
-  { delay: 10000 } // 10 seconds for quick test
-);
-
-
-      return true;
+    updateDailyWeightIn: async (_: any, { input }: { input: { date: string, weight: number, unit: string } }, context: any): Promise<any> => {
+      const action = new UpdateDailyWeightInAction();
+      const date = new Date(input.date);
+      return await action.execute({ userId: context.currentUser.id, date, weight: input.weight, unit: input.unit });
     },
   },
 };

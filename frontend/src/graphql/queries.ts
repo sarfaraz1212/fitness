@@ -136,8 +136,14 @@ export const GET_USER_QUERY = gql`
   }
 `;
 
-export const DAILY_WEIGHT_CHECK_QUERY = gql`
+export const GET_DAILY_WEIGHT_QUERY = gql`
   query Query {
-    checkDailyWeightIn
+    getDailyWeight {
+      _id
+      user_id
+      weight
+      unit
+      date
+    }
   }
 `;

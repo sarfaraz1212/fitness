@@ -194,4 +194,30 @@ export const UNASSIGN_DIET_MUTATION = gql`
   }
 `;
 
+export const LOG_DAILY_WEIGHT_IN_MUTATION = gql`
+  mutation LogDailyWeightIn($input: logDailyWeightInMutationInput!) {
+    logDailyWeightIn(input: $input) {
+      _id
+      user_id
+      weight
+      unit
+      date
+      updatedAt
+    }
+  }
+`;
+
+export const UPDATE_DAILY_WEIGHT_IN_MUTATION = gql`
+  mutation UpdateDailyWeightIn($input: updateDailyWeightInMutationInput!) {
+    updateDailyWeightIn(input: $input) {
+      _id
+      user_id
+      weight
+      unit
+      date
+      updatedAt
+    }
+  }
+`;
+
 
