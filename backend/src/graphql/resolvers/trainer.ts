@@ -79,17 +79,7 @@ export const trainerResolvers = {
     Mutation: {
         createDiet: async (_: any, args: any, context: any) => {
 
-            const { name, description } = args.input;
-
-            const action = new CreateDietAction();
-
-            const actionResponse = await action.execute({
-                name,
-                description,
-                addedBy: context.currentUser._id
-            });
-
-            return actionResponse;
+            console.log(args);
         },
         editDiet: async (_: any, args: any, context: any) => {
 

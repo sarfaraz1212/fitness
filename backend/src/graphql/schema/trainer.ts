@@ -1,7 +1,11 @@
 import { gql } from "graphql-tag";
 
 export const trainerTypeDefs = gql`
-
+  """
+  =====================
+  MEAL
+  =====================
+  """
   type Meal {
     _id: ID!
     name: String!
@@ -12,17 +16,8 @@ export const trainerTypeDefs = gql`
     carbs: Float!
     fats: Float!
     addedBy: ID!
-  }
-
-  type Exercise {
-    _id: ID!
-    name: String!
-    sets: Int!
-    reps: Int!
-    weight: Float
-    duration: String
-    restTime: String
-    notes: String
+    createdAt: String!
+    updatedAt: String!
   }
 
   input MealInput {
@@ -35,15 +30,53 @@ export const trainerTypeDefs = gql`
     fats: Float!
   }
 
+  """
+  =====================
+  DIET DAY
+  =====================
+  """
+  type DietDay {
+    dayId: String!
+    dayLabel: String!
+    meals: [Meal!]!
+  }
 
+  input DietDayInput {
+    dayId: String!
+    dayLabel: String!
+    meals: [MealInput!]!
+  }
+
+  """
+  =====================
+  DIET
+  =====================
+  """
   type Diet {
     _id: ID!
     addedBy: ID!
+    client: ID
     name: String!
     description: String
-    meals: [Meal!]!
+    days: [DietDay!]!
     createdAt: String!
     updatedAt: String!
+  }
+
+  """
+  =====================
+  WORKOUT
+  =====================
+  """
+  type Exercise {
+    _id: ID!
+    name: String!
+    sets: Int!
+    reps: Int!
+    weight: Float
+    duration: String
+    restTime: String
+    notes: String
   }
 
   type Workout {
@@ -56,7 +89,11 @@ export const trainerTypeDefs = gql`
     updatedAt: String!
   }
 
-
+  """
+  =====================
+  PAGINATION
+  =====================
+  """
   type PaginatedClientsResponse {
     clients: [User]
     total: Int
@@ -71,7 +108,6 @@ export const trainerTypeDefs = gql`
     status: String
     onboardingFilter: Boolean
   }
-
 
   type PaginatedDietsResponse {
     diets: [Diet]
@@ -100,10 +136,16 @@ export const trainerTypeDefs = gql`
     search: String
   }
 
-
+  """
+  =====================
+  INPUTS
+  =====================
+  """
   input CreateDietInput {
-    name: String!
-    description: String
+    clientId: ID!
+    planName: String!
+    assignNow: Boolean!
+    days: [DietDayInput!]!
   }
 
   input EditDietInput {
@@ -126,6 +168,11 @@ export const trainerTypeDefs = gql`
     notes: String
   }
 
+  """
+  =====================
+  OTHER TYPES
+  =====================
+  """
   type MacroResponse {
     name: String!
     calories: Float!
@@ -134,11 +181,16 @@ export const trainerTypeDefs = gql`
     fats: Float!
   }
 
-  type DeleteMealResponse{
+  type DeleteMealResponse {
     dietId: String!
     mealId: String!
   }
 
+  """
+  =====================
+  QUERIES
+  =====================
+  """
   type Query {
     getClients(input: FetchClientsInput): PaginatedClientsResponse
     getDiets(input: FetchDietsInput): PaginatedDietsResponse!
@@ -146,21 +198,33 @@ export const trainerTypeDefs = gql`
     getWorkouts(input: FetchWorkoutsInput): PaginatedWorkoutsResponse!
   }
 
-
+  """
+  =====================
+  MUTATIONS
+  =====================
+  """
   type Mutation {
     createDiet(input: CreateDietInput!): Diet!
     editDiet(dietId: String!, input: EditDietInput!): Diet!
-    deleteDiet(dietId:String!): ID!
+    deleteDiet(dietId: String!): ID!
+
     createMeal(input: MealInput!, dietId: String!): Meal!
     editMeal(dietId: String!, mealId: String!, input: MealInput!): Meal!
     deleteMeal(dietId: String!, mealId: String!): DeleteMealResponse!
+
     createWorkout(input: CreateWorkoutInput!): Workout!
     updateWorkout(workoutId: String!, input: CreateWorkoutInput!): Workout!
     deleteWorkout(workoutId: String!): String!
+
     addExercise(workoutId: String!, input: ExerciseInput!): Workout!
-    updateExercise(workoutId: String!, exerciseId: String!, input: ExerciseInput!): Workout!
+    updateExercise(
+      workoutId: String!
+      exerciseId: String!
+      input: ExerciseInput!
+    ): Workout!
     deleteExercise(workoutId: String!, exerciseId: String!): Workout!
-    assignDiet(dietId: String!,clientId:String!):Diet!
+
+    assignDiet(dietId: String!, clientId: String!): Diet!
     unassignDiet(clientId: String!): User!
   }
 `;
