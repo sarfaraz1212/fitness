@@ -272,6 +272,7 @@ const Builder = () => {
   };
 
   const savePlan = () => {
+    
     const emptyDays = dayConfigs.filter((d) => d.meals.length === 0);
     if (emptyDays.length > 0) {
       toast({

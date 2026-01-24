@@ -12,7 +12,7 @@ interface PlanStatsProps {
 
 const PlanStats: React.FC<PlanStatsProps> = ({ totals }) => {
   return (
-    <div className="p-4 rounded-xl bg-muted/50 grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="p-4 rounded-xl bg-muted/50 grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
       {/* Calories */}
       <div className="text-center p-2 rounded-lg bg-primary/10">
         <Flame className="w-4 h-4 text-primary mx-auto mb-1" />
