@@ -40,9 +40,11 @@ export const useDiet = (params: { page: number; limit: number; search: string; s
   });
 
   useEffect(() => {
-    if (dietsData && dietsData.diets) {
+    if (dietsData && dietsData.diets.length > 2) {
+
+    
       const mapped: DietPlan[] = dietsData.diets.map((d: any) => ({
-        id: d._id,
+        id: d._id ?? "",
         name: d.name,
         description: d.description,
         meals: (d.meals || []).map((m: any) => ({

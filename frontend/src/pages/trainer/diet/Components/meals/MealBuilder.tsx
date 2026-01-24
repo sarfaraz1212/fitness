@@ -25,6 +25,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import ClientBuilderProfileCard from "@/components/builder/ClientProfileCard";
+import MealCard from "./MealCard";
 
 interface Client {
   id: string;
@@ -154,6 +155,7 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    
                     {otherDays(dayConfig.dayId).length > 0 && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -189,40 +191,9 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
 
                 <CollapsibleContent>
                   <div className="px-4 pb-4 space-y-4">
+                    <MacrosComponent macros={macros} />
                     {dayConfig.meals.map((meal) => (
-                      <div
-                        key={meal.id}
-                        className="p-3 rounded-xl bg-muted/30 flex items-start justify-between gap-3"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-foreground text-sm">{meal.name}</span>
-                            {meal.time && (
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {meal.time}
-                              </span>
-                            )}
-                          </div>
-                          {meal.description && (
-                            <p className="text-xs text-muted-foreground mt-0.5">{meal.description}</p>
-                          )}
-                          <div className="flex flex-wrap gap-1.5 mt-2">
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-accent/20 text-accent font-medium">{meal.calories} kcal</span>
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">P: {meal.protein}g</span>
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-accent/10 text-accent font-medium">C: {meal.carbs}g</span>
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-destructive/10 text-destructive font-medium">F: {meal.fats}g</span>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => removeMeal(dayConfig.dayId, meal.id)}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
+                      <MealCard key={meal.id} meal={meal} onRemove={() => removeMeal(dayConfig.dayId, meal.id)} />
                     ))}
 
                     {/* Add Meal Form */}
