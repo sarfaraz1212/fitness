@@ -12,48 +12,26 @@ import { Button } from "@/components/ui/button";
 import ClientBuilderProfileCard from "@/components/builder/ClientProfileCard";
 import MealCard from "./MealCard";
 import PlanStats from "../plans/PlanStats";
-import AddMealForm from "./AddMealForm"; // <-- Import your form
-
-interface Client {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-}
-
-interface Meal {
-  id: string;
-  name: string;
-  description?: string;
-  time?: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fats: number;
-}
-
-interface DayConfig {
-  dayId: string;
-  dayLabel: string;
-  meals: Meal[];
-}
+import AddMealForm from "./AddMealForm";
+import type { Client, Meal, DayConfig, MealForm, BuilderStep } from "../../types";
 
 interface MealBuilderProps {
   planName: string;
   selectedClient: Client;
   dayConfigs: DayConfig[];
-  setCurrentStep: React.Dispatch<
-    React.SetStateAction<"client" | "plans" | "days" | "meals">
-  >;
+  setCurrentStep: React.Dispatch<React.SetStateAction<BuilderStep>>;
   savePlan: () => void;
-  getDayMacros: (
-    meals: Meal[]
-  ) => { calories: number; protein: number; carbs: number; fats: number };
+  getDayMacros: (meals: Meal[]) => { calories: number; protein: number; carbs: number; fats: number };
   copyMealsToDay: (fromDayId: string, toDayId: string) => void;
   removeMeal: (dayId: string, mealId: string) => void;
   otherDays: (currentDayId: string) => DayConfig[];
-  fetchMacros: (mealName: string) => void; // For your AI macro fetching
+  fetchMacros: (mealName: string) => void;
   fetchMacrosLoading: boolean;
+  mealForm: MealForm;
+  setMealForm: React.Dispatch<React.SetStateAction<MealForm>>;
+  addMeal: (dayId: string) => void;
+  activeDayId: string | null;
+  setActiveDayId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const MealBuilder: React.FC<MealBuilderProps> = ({
@@ -67,36 +45,17 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
   removeMeal,
   otherDays,
   fetchMacros,
-  fetchMacrosLoading
+  fetchMacrosLoading,
+  mealForm,
+  setMealForm,
+  addMeal,
+  activeDayId,
+  setActiveDayId
 }) => {
-  const [openDayId, setOpenDayId] = useState<string | null>(null);
-  const [activeDayId, setActiveDayId] = useState<string | null>(null);
-  const [mealForm, setMealForm] = useState<Partial<Meal>>({});
+  const [openDayId, setOpenDayId] = useState<string | null>(dayConfigs[0]?.dayId || null);
 
   const toggleDayConfig = (dayId: string) => {
     setOpenDayId((prev) => (prev === dayId ? null : dayId));
-  };
-
-  const handleAddMeal = (dayId: string) => {
-    if (!mealForm.name || !mealForm.calories) return;
-
-    const day = dayConfigs.find((d) => d.dayId === dayId);
-    if (!day) return;
-
-    const newMeal: Meal = {
-      id: Date.now().toString(),
-      name: mealForm.name || "",
-      description: mealForm.description || "",
-      time: mealForm.time,
-      calories: Number(mealForm.calories) || 0,
-      protein: Number(mealForm.protein) || 0,
-      carbs: Number(mealForm.carbs) || 0,
-      fats: Number(mealForm.fats) || 0,
-    };
-
-    day.meals.push(newMeal);
-    setMealForm({});
-    setActiveDayId(null);
   };
 
   return (
@@ -109,7 +68,7 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
       {/* Right Column: Meal Builder */}
       <div className="md:w-2/3 flex-1 space-y-4 overflow-y-auto p-4">
         {/* Header */}
-        <div className="p-4 rounded-xl bg-card flex items-center justify-between">
+        <div className="p-4 rounded-xl bg-card border border-border flex items-center justify-between">
           <div>
             <p className="font-semibold text-foreground">{planName}</p>
             <p className="text-sm text-muted-foreground">
@@ -131,7 +90,7 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
           const macros = getDayMacros(dayConfig.meals);
 
           return (
-            <div key={dayConfig.dayId} className="rounded-2xl bg-card shadow-soft overflow-hidden">
+            <div key={dayConfig.dayId} className="rounded-2xl bg-card border border-border overflow-hidden">
               <div
                 className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors cursor-pointer"
                 onClick={() => toggleDayConfig(dayConfig.dayId)}
@@ -156,7 +115,13 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // You could add a dropdown here for which day to copy FROM
+                        // For now just taking the first other day with meals if it exists
+                        const sourceDay = otherDays(dayConfig.dayId)[0];
+                        if (sourceDay) copyMealsToDay(sourceDay.dayId, dayConfig.dayId);
+                      }}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
@@ -173,19 +138,21 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
                 <div className="px-4 pb-4 space-y-4">
                   <PlanStats totals={macros} />
 
-                  {dayConfig.meals.map((meal) => (
-                    <MealCard
-                      key={meal.id}
-                      meal={meal}
-                      onRemove={() => removeMeal(dayConfig.dayId, meal.id)}
-                    />
-                  ))}
+                  <div className="space-y-3">
+                    {dayConfig.meals.map((meal) => (
+                      <MealCard
+                        key={meal.id}
+                        meal={meal}
+                        onRemove={() => removeMeal(dayConfig.dayId, meal.id)}
+                      />
+                    ))}
+                  </div>
 
                   {activeDayId === dayConfig.dayId ? (
                     <AddMealForm
                       mealForm={mealForm}
                       setMealForm={setMealForm}
-                      handleAddMeal={() => handleAddMeal(dayConfig.dayId)}
+                      handleAddMeal={() => addMeal(dayConfig.dayId)}
                       handleCancel={() => setActiveDayId(null)}
                       fetchMacros={fetchMacros}
                       fetchMacrosLoading={fetchMacrosLoading}
@@ -193,7 +160,7 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
                   ) : (
                     <Button
                       variant="outline"
-                      className="w-full"
+                      className="w-full border-dashed"
                       onClick={() => setActiveDayId(dayConfig.dayId)}
                     >
                       <Plus className="w-4 h-4 mr-2" /> Add Meal
@@ -210,11 +177,11 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
           <Button
             variant="outline"
             onClick={() => setCurrentStep("days")}
-            className="flex-1"
+            className="flex-1 h-12"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
-          <Button onClick={savePlan} className="flex-1">
+          <Button onClick={savePlan} className="flex-1 h-12 shadow-lg shadow-primary/20">
             <Check className="w-4 h-4 mr-2" /> Save Plan
           </Button>
         </div>

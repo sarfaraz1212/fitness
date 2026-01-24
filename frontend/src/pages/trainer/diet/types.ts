@@ -53,6 +53,30 @@ export interface AddMealFormProps {
 }
 
 
+export interface Client {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+export interface DayConfig {
+  dayId: string;
+  dayLabel: string;
+  meals: Meal[];
+  isOpen: boolean;
+}
+
+export interface SavedPlan {
+  id: string;
+  clientId: string;
+  name: string;
+  days: DayConfig[];
+  createdAt: string;
+}
+
+export type BuilderStep = "client" | "plans" | "days" | "meals";
+
 export interface CreateDietResponse {
   createDiet: {
     _id: string;

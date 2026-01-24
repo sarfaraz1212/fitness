@@ -1,5 +1,5 @@
-import { 
-  User, Mail, Calendar, Ruler, Weight, Heart, 
+import {
+  User, Mail, Calendar, Ruler, Weight, Heart,
   Dumbbell, Moon, Brain, Cigarette, Wine, Briefcase,
   Target, Clock, Droplets, Activity
 } from "lucide-react";
@@ -57,15 +57,15 @@ const mockClientProfile: ClientProfile = {
   notes: "cant use wrist properly",
 };
 
-const InfoRow = ({ 
-  icon: Icon, 
-  label, 
-  value, 
-  valueClass = "" 
-}: { 
-  icon: React.ElementType; 
-  label: string; 
-  value: string | number; 
+const InfoRow = ({
+  icon: Icon,
+  label,
+  value,
+  valueClass = ""
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
   valueClass?: string;
 }) => (
   <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-200 group">
@@ -79,15 +79,15 @@ const InfoRow = ({
   </div>
 );
 
-const StatCard = ({ 
-  icon: Icon, 
-  label, 
-  value, 
-  unit 
-}: { 
-  icon: React.ElementType; 
-  label: string; 
-  value: number; 
+const StatCard = ({
+  icon: Icon,
+  label,
+  value,
+  unit
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: number;
   unit: string;
 }) => (
   <div className="relative overflow-hidden p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 group hover:border-primary/40 transition-all duration-300">
@@ -101,9 +101,9 @@ const StatCard = ({
   </div>
 );
 
-const ClientBuilderProfileCard = () => {
-  const client = mockClientProfile;
-  const initials = client.name.slice(0, 2).toUpperCase();
+const ClientBuilderProfileCard = ({ client, className }: { client?: any, className?: string }) => {
+  const displayClient = client || mockClientProfile;
+  const initials = (displayClient.name || "Client").slice(0, 2).toUpperCase();
 
   const formatGoal = (goal: string) =>
     goal
@@ -111,7 +111,8 @@ const ClientBuilderProfileCard = () => {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
 
-  const getLevelColor = (level: string) => {
+  const getLevelColor = (level?: string) => {
+    if (!level) return "bg-primary/10 text-primary border-primary/20";
     switch (level.toLowerCase()) {
       case "beginner":
         return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
@@ -125,21 +126,20 @@ const ClientBuilderProfileCard = () => {
   };
 
   return (
-    <div className="w-full max-w-md h-full sticky top-4">
+    <div className={`w-full max-w-md h-full sticky top-4 ${className || ""}`}>
       <div className="relative overflow-hidden rounded-3xl bg-card border border-border shadow-2xl shadow-primary/5 h-full flex flex-col">
         {/* Make scrollable area */}
         <div className="overflow-y-auto flex-1 px-0">
-          {/* Header Background */}
-          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-primary via-primary/90 to-primary/70" />
-          <div className="absolute top-0 left-0 right-0 h-32 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent" />
+          {/* Header Background - Adaptive subtle style */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-muted/50 dark:bg-primary/20 border-b border-border/50" />
 
           {/* Profile Header */}
           <div className="relative pt-8 pb-6 px-6">
             <div className="flex flex-col items-center">
               <div className="relative">
                 <Avatar className="h-24 w-24 ring-4 ring-background shadow-xl">
-                  <AvatarImage src={client.profile_image} alt={client.name} />
-                  <AvatarFallback className="bg-primary-foreground text-primary text-2xl font-bold">
+                  <AvatarImage src={displayClient.profile_image} alt={displayClient.name} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -148,26 +148,26 @@ const ClientBuilderProfileCard = () => {
                 </div>
               </div>
 
-              <h2 className="mt-4 text-2xl font-bold text-primary-foreground capitalize">
-                {client.name}
+              <h2 className="mt-4 text-2xl font-bold text-foreground capitalize">
+                {displayClient.name || "Unknown Client"}
               </h2>
-              <p className="text-primary-foreground/80 flex items-center gap-2 mt-1">
+              <p className="text-muted-foreground flex items-center gap-2 mt-1 text-sm font-medium">
                 <Mail className="w-4 h-4" />
-                {client.email}
+                {displayClient.email || "No email provided"}
               </p>
 
               <div className="flex items-center gap-2 mt-3">
                 <Badge
                   variant="outline"
-                  className={`${getLevelColor(client.fitness_level)} border capitalize`}
+                  className={`${getLevelColor(displayClient.fitness_level)} border capitalize`}
                 >
-                  {client.fitness_level}
+                  {displayClient.fitness_level || "Beginner"}
                 </Badge>
                 <Badge
                   variant="secondary"
-                  className="bg-background/20 text-primary-foreground border-background/30"
+                  className="bg-muted text-foreground border-border"
                 >
-                  {client.blood_group}
+                  {displayClient.blood_group || "N/A"}
                 </Badge>
               </div>
             </div>
@@ -176,9 +176,9 @@ const ClientBuilderProfileCard = () => {
           {/* Stats Grid */}
           <div className="px-6 pb-4">
             <div className="grid grid-cols-3 gap-3">
-              <StatCard icon={Ruler} label="Height" value={client.height} unit="cm" />
-              <StatCard icon={Weight} label="Weight" value={client.weight} unit="kg" />
-              <StatCard icon={Heart} label="Body Fat" value={client.body_fat} unit="%" />
+              <StatCard icon={Ruler} label="Height" value={displayClient.height || 0} unit="cm" />
+              <StatCard icon={Weight} label="Weight" value={displayClient.weight || 0} unit="kg" />
+              <StatCard icon={Heart} label="Body Fat" value={displayClient.body_fat || 0} unit="%" />
             </div>
           </div>
 
@@ -190,7 +190,7 @@ const ClientBuilderProfileCard = () => {
                 <span className="font-semibold text-foreground">Fitness Goals</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {client.fitness_goals.map((goal, index) => (
+                {(displayClient.fitness_goals || []).map((goal: string, index: number) => (
                   <Badge
                     key={index}
                     className="bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-1"
@@ -205,42 +205,42 @@ const ClientBuilderProfileCard = () => {
           {/* Details Grid */}
           <div className="px-6 pb-4 space-y-2">
             <div className="grid grid-cols-2 gap-2">
-              <InfoRow icon={Calendar} label="Age" value={`${client.age} years`} />
-              <InfoRow icon={User} label="Gender" value={client.gender} />
+              <InfoRow icon={Calendar} label="Age" value={`${displayClient.age || 0} years`} />
+              <InfoRow icon={User} label="Gender" value={displayClient.gender || "Other"} />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <InfoRow icon={Dumbbell} label="Workout/Week" value={`${client.exercise_frequency}x`} />
-              <InfoRow icon={Clock} label="Training Time" value={client.training_time} />
+              <InfoRow icon={Dumbbell} label="Workout/Week" value={`${displayClient.exercise_frequency || 0}x`} />
+              <InfoRow icon={Clock} label="Training Time" value={displayClient.training_time || "N/A"} />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <InfoRow icon={Moon} label="Sleep" value={`${client.sleep_hours} hrs`} />
-              <InfoRow icon={Brain} label="Stress" value={client.stress_level} />
+              <InfoRow icon={Moon} label="Sleep" value={`${displayClient.sleep_hours || 0} hrs`} />
+              <InfoRow icon={Brain} label="Stress" value={displayClient.stress_level || "Normal"} />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <InfoRow icon={Cigarette} label="Smoking" value={client.smoking_frequency} />
-              <InfoRow icon={Wine} label="Alcohol" value={client.alcohol_frequency} />
+              <InfoRow icon={Cigarette} label="Smoking" value={displayClient.smoking_frequency || "Never"} />
+              <InfoRow icon={Wine} label="Alcohol" value={displayClient.alcohol_frequency || "Never"} />
             </div>
-            <InfoRow icon={Briefcase} label="Work Environment" value={`${client.work_environment} job`} />
-            <InfoRow icon={Droplets} label="Diet Preference" value={client.diet_preferences} />
+            <InfoRow icon={Briefcase} label="Work Environment" value={`${displayClient.work_environment || "Desk"} job`} />
+            <InfoRow icon={Droplets} label="Diet Preference" value={displayClient.diet_preferences || "None"} />
           </div>
 
           {/* Medical & Notes */}
           <div className="px-6 pb-6 space-y-3">
-            {client.medical_conditions && (
+            {displayClient.medical_conditions && (
               <div className="p-4 rounded-2xl bg-destructive/5 border border-destructive/20">
-                <p className="text-xs text-destructive font-semibold uppercase tracking-wide mb-1">
+                <p className="text-[10px] text-destructive font-bold uppercase tracking-wider mb-1">
                   ⚠️ Medical Conditions
                 </p>
-                <p className="text-sm text-foreground capitalize">{client.medical_conditions}</p>
+                <p className="text-sm text-foreground font-medium leading-relaxed">{displayClient.medical_conditions}</p>
               </div>
             )}
 
-            {client.notes && (
-              <div className="p-4 rounded-2xl bg-secondary/50 border border-secondary">
-                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-1">
-                  📝 Notes
+            {displayClient.notes && (
+              <div className="p-4 rounded-2xl bg-muted/50 border border-border/50">
+                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">
+                  📝 Trainer Notes
                 </p>
-                <p className="text-sm text-foreground capitalize">{client.notes}</p>
+                <p className="text-sm text-foreground font-medium leading-relaxed">{displayClient.notes}</p>
               </div>
             )}
           </div>
@@ -249,6 +249,5 @@ const ClientBuilderProfileCard = () => {
     </div>
   );
 };
-
 
 export default ClientBuilderProfileCard;
