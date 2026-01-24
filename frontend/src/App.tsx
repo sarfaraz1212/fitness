@@ -15,9 +15,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ClientIndex from "./pages/trainer/client/Index";
 import ClientCreate from "./pages/trainer/client/Create";
 import ClientView from "./pages/trainer/client/View";
-import DietView from "./pages/trainer/diet/Index";
-import WorkoutView from "./pages/trainer/workout/Index";
 import DietPlanBuilder from "./pages/trainer/diet/Builder";
+import WorkoutBuilder from "./pages/trainer/workout/Builder";
 
 const queryClient = new QueryClient();
 
@@ -29,21 +28,21 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/onboarding" element={<CreateOnboarding />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/trainer" element={<ProtectedRoute><TrainerDashboard /></ProtectedRoute>} />
+            <Routes>
+              <Route path="/" element={<Login />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/onboarding" element={<CreateOnboarding />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/trainer" element={<ProtectedRoute><TrainerDashboard /></ProtectedRoute>} />
 
-            <Route path="/trainer/clients" element={<ProtectedRoute><ClientIndex /></ProtectedRoute>} />
-            <Route path="/trainer/diet-plan-builder" element={<ProtectedRoute><DietPlanBuilder /></ProtectedRoute>} />
-            <Route path="/trainer/workout-plans" element={<ProtectedRoute><WorkoutView /></ProtectedRoute>} />
-            <Route path="/trainer/clients/new" element={<ProtectedRoute><ClientCreate /></ProtectedRoute>} />
-            <Route path="/trainer/clients/:id" element={<ClientView />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="/trainer/clients" element={<ProtectedRoute><ClientIndex /></ProtectedRoute>} />
+              <Route path="/trainer/diet-plan-builder" element={<ProtectedRoute><DietPlanBuilder /></ProtectedRoute>} />
+              <Route path="/trainer/workout-plans" element={<ProtectedRoute><WorkoutBuilder /></ProtectedRoute>} />
+              <Route path="/trainer/clients/new" element={<ProtectedRoute><ClientCreate /></ProtectedRoute>} />
+              <Route path="/trainer/clients/:id" element={<ClientView />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>

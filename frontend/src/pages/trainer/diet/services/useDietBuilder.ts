@@ -100,7 +100,6 @@ export const useDietBuilder = () => {
             meals: [],
             isOpen: false,
         }));
-        if (configs.length > 0) configs[0].isOpen = true;
         setDayConfigs(configs);
         setCurrentStep("meals");
     };
@@ -129,9 +128,87 @@ export const useDietBuilder = () => {
         );
 
         // Reset form
-        setMealForm({ name: "", description: "", time: "", calories: "", protein: "", carbs: "", fats: "" });
+        setMealForm({
+            name: "",
+            description: "",
+            time: "",
+            calories: "",
+            protein: "",
+            carbs: "",
+            fats: "",
+        });
         setActiveDayId(null);
         toast({ title: "Meal added", description: `${newMeal.name} added to the day` });
+    };
+
+    const openEditMeal = (dayId: string, meal: Meal) => {
+        setMealForm({
+            id: meal.id,
+            name: meal.name,
+            description: meal.description,
+            time: meal.time,
+            calories: meal.calories.toString(),
+            protein: meal.protein.toString(),
+            carbs: meal.carbs.toString(),
+            fats: meal.fats.toString(),
+        });
+        setActiveDayId(dayId);
+    };
+
+    const updateMeal = (dayId: string) => {
+        if (!mealForm.id) return;
+        if (!mealForm.name.trim()) {
+            toast({ title: "Error", description: "Meal name is required", variant: "destructive" });
+            return;
+        }
+
+        const updatedMeal: Meal = {
+            id: mealForm.id,
+            name: mealForm.name.trim(),
+            description: mealForm.description.trim(),
+            time: mealForm.time,
+            calories: Number(mealForm.calories) || 0,
+            protein: Number(mealForm.protein) || 0,
+            carbs: Number(mealForm.carbs) || 0,
+            fats: Number(mealForm.fats) || 0,
+        };
+
+        setDayConfigs((prev) =>
+            prev.map((d) =>
+                d.dayId === dayId
+                    ? {
+                        ...d,
+                        meals: d.meals.map((m) => (m.id === mealForm.id ? updatedMeal : m)),
+                    }
+                    : d
+            )
+        );
+
+        // Reset form
+        setMealForm({
+            name: "",
+            description: "",
+            time: "",
+            calories: "",
+            protein: "",
+            carbs: "",
+            fats: "",
+        });
+        setActiveDayId(null);
+        toast({ title: "Meal updated", description: `${updatedMeal.name} has been updated` });
+    };
+
+    const cancelEdit = () => {
+        setMealForm({
+            name: "",
+            description: "",
+            time: "",
+            calories: "",
+            protein: "",
+            carbs: "",
+            fats: "",
+        });
+        setActiveDayId(null);
     };
 
     const removeMeal = (dayId: string, mealId: string) => {
@@ -186,8 +263,7 @@ export const useDietBuilder = () => {
     const otherDays = (currentDayId: string) =>
         dayConfigs.filter((d) => d.dayId !== currentDayId && d.meals.length > 0);
 
-    const savePlan = () => {
-
+    const savePlan = (assignNow: boolean = false) => {
         console.log(dayConfigs);
         const emptyDays = dayConfigs.filter((d) => d.meals.length === 0);
         if (emptyDays.length > 0) {
@@ -202,12 +278,13 @@ export const useDietBuilder = () => {
         console.log("Saving plan:", {
             client: selectedClient,
             planName,
+            assignNow,
             days: dayConfigs,
         });
 
         toast({
-            title: "Plan created!",
-            description: `Diet plan "${planName}" created for ${selectedClient?.name}`,
+            title: assignNow ? "Plan created & assigned!" : "Plan created!",
+            description: `Diet plan "${planName}" ${assignNow ? "assigned to" : "created for"} ${selectedClient?.name}`,
         });
 
         navigate("/create/diet");
@@ -242,6 +319,9 @@ export const useDietBuilder = () => {
         fetchMacros,
         proceedToMeals,
         addMeal,
+        openEditMeal,
+        updateMeal,
+        cancelEdit,
         removeMeal,
         copyMealsToDay,
         getDayMacros,

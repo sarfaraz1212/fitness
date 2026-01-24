@@ -14,13 +14,14 @@ import MealCard from "./MealCard";
 import PlanStats from "../plans/PlanStats";
 import AddMealForm from "./AddMealForm";
 import type { Client, Meal, DayConfig, MealForm, BuilderStep } from "../../types";
+import SaveConfirmationModal from "@/components/builder/SaveConfirmationModal";
 
 interface MealBuilderProps {
   planName: string;
   selectedClient: Client;
   dayConfigs: DayConfig[];
   setCurrentStep: React.Dispatch<React.SetStateAction<BuilderStep>>;
-  savePlan: () => void;
+  savePlan: (assignNow: boolean) => void;
   getDayMacros: (meals: Meal[]) => { calories: number; protein: number; carbs: number; fats: number };
   copyMealsToDay: (fromDayId: string, toDayId: string) => void;
   removeMeal: (dayId: string, mealId: string) => void;
@@ -32,6 +33,9 @@ interface MealBuilderProps {
   addMeal: (dayId: string) => void;
   activeDayId: string | null;
   setActiveDayId: React.Dispatch<React.SetStateAction<string | null>>;
+  openEditMeal: (dayId: string, meal: Meal) => void;
+  updateMeal: (dayId: string) => void;
+  cancelEdit: () => void;
 }
 
 const MealBuilder: React.FC<MealBuilderProps> = ({
@@ -50,12 +54,25 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
   setMealForm,
   addMeal,
   activeDayId,
-  setActiveDayId
+  setActiveDayId,
+  openEditMeal,
+  updateMeal,
+  cancelEdit
 }) => {
-  const [openDayId, setOpenDayId] = useState<string | null>(dayConfigs[0]?.dayId || null);
+  const [openDayId, setOpenDayId] = useState<string | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const toggleDayConfig = (dayId: string) => {
     setOpenDayId((prev) => (prev === dayId ? null : dayId));
+  };
+
+  const handleFinishClick = () => {
+    const emptyDays = dayConfigs.filter((d) => d.meals.length === 0);
+    if (emptyDays.length > 0) {
+      savePlan(false);
+      return;
+    }
+    setIsConfirmModalOpen(true);
   };
 
   return (
@@ -117,8 +134,6 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
                       size="icon"
                       onClick={(e) => {
                         e.stopPropagation();
-                        // You could add a dropdown here for which day to copy FROM
-                        // For now just taking the first other day with meals if it exists
                         const sourceDay = otherDays(dayConfig.dayId)[0];
                         if (sourceDay) copyMealsToDay(sourceDay.dayId, dayConfig.dayId);
                       }}
@@ -143,7 +158,9 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
                       <MealCard
                         key={meal.id}
                         meal={meal}
+                        planId={dayConfig.dayId}
                         onRemove={() => removeMeal(dayConfig.dayId, meal.id)}
+                        openEditMeal={openEditMeal}
                       />
                     ))}
                   </div>
@@ -153,9 +170,11 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
                       mealForm={mealForm}
                       setMealForm={setMealForm}
                       handleAddMeal={() => addMeal(dayConfig.dayId)}
-                      handleCancel={() => setActiveDayId(null)}
+                      handleUpdateMeal={() => updateMeal(dayConfig.dayId)}
+                      handleCancel={cancelEdit}
                       fetchMacros={fetchMacros}
                       fetchMacrosLoading={fetchMacrosLoading}
+                      isEditing={!!mealForm.id}
                     />
                   ) : (
                     <Button
@@ -181,11 +200,19 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
-          <Button onClick={savePlan} className="flex-1 h-12 shadow-lg shadow-primary/20">
+          <Button onClick={handleFinishClick} className="flex-1 h-12 shadow-lg shadow-primary/20">
             <Check className="w-4 h-4 mr-2" /> Save Plan
           </Button>
         </div>
       </div>
+
+      <SaveConfirmationModal
+        open={isConfirmModalOpen}
+        onOpenChange={setIsConfirmModalOpen}
+        onConfirm={savePlan}
+        title="Assign Diet Plan?"
+        clientName={selectedClient.name}
+      />
     </div>
   );
 };

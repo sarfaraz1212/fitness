@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { Search, User, Check, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import { fetchClients } from "@/lib/React-query/queryFunction";
 import AppPagination from "@/components/common/AppPagination";
-import Spinner from "@/components/ui/spinner";
+import Spinner from "@/components/ui/Spinner";
 
 interface Client {
   id: string;
@@ -15,14 +15,12 @@ interface Client {
   avatar: string;
 }
 
-type Step = "client" | "plans" | "days" | "meals";
-
 interface ClientListProps {
   clientSearch: string;
   setClientSearch: React.Dispatch<React.SetStateAction<string>>;
   selectedClient: Client | null;
   setSelectedClient: React.Dispatch<React.SetStateAction<Client | null>>;
-  setCurrentStep: React.Dispatch<React.SetStateAction<Step>>;
+  setCurrentStep: (step: any) => void;
 }
 
 const ClientList: React.FC<ClientListProps> = ({
@@ -37,7 +35,7 @@ const ClientList: React.FC<ClientListProps> = ({
   const limit = 5;
   const [debouncedSearchQuery] = useDebounce(clientSearch, 300);
 
-  const { data: clientsData, isFetching, error } = useQuery({
+  const { data: clientsData, isFetching, error } = useQuery<any>({
     queryKey: ["clients", page, limit, debouncedSearchQuery],
     queryFn: () =>
       fetchClients({
@@ -45,7 +43,7 @@ const ClientList: React.FC<ClientListProps> = ({
         limit,
         search: debouncedSearchQuery,
       }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   function handleSelect(client: Client) {
@@ -73,7 +71,7 @@ const ClientList: React.FC<ClientListProps> = ({
       <div className="text-center mb-6">
         <User className="w-12 h-12 text-primary mx-auto mb-3" />
         <h2 className="text-lg font-semibold">Select Client</h2>
-        <p className="text-sm text-muted-foreground">Choose which client this diet plan is for</p>
+        <p className="text-sm text-muted-foreground">Choose which client this plan is for</p>
       </div>
 
       <div className="relative">
@@ -98,15 +96,14 @@ const ClientList: React.FC<ClientListProps> = ({
           <div className="flex items-center justify-center h-[420px] text-muted-foreground">No clients found</div>
         )}
 
-        {clientsData?.clients?.map((client) => (
+        {clientsData?.clients?.map((client: Client) => (
           <button
             key={client.id}
             onClick={() => handleSelect(client)}
-            className={`w-full p-4 rounded-xl flex items-center gap-4 transition-all ${
-              selectedClient?.id === client.id
-                ? "bg-primary/10 border-2 border-primary"
-                : "bg-card border-2 border-transparent hover:border-border"
-            }`}
+            className={`w-full p-4 rounded-xl flex items-center gap-4 transition-all ${selectedClient?.id === client.id
+              ? "bg-primary/10 border-2 border-primary"
+              : "bg-card border-2 border-transparent hover:border-border"
+              }`}
           >
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
               {client.avatar}

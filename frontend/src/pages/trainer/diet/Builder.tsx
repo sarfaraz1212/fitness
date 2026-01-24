@@ -36,6 +36,9 @@ const Builder = () => {
     fetchMacros,
     proceedToMeals,
     addMeal,
+    openEditMeal,
+    updateMeal,
+    cancelEdit,
     removeMeal,
     copyMealsToDay,
     getDayMacros,
@@ -94,7 +97,6 @@ const Builder = () => {
           <ClientList
             clientSearch={clientSearch}
             setClientSearch={setClientSearch}
-            filteredClients={filteredClients}
             selectedClient={selectedClient}
             setSelectedClient={setSelectedClient}
             setCurrentStep={setCurrentStep}
@@ -156,6 +158,9 @@ const Builder = () => {
             mealForm={mealForm}
             setMealForm={setMealForm}
             addMeal={addMeal}
+            openEditMeal={openEditMeal}
+            updateMeal={updateMeal}
+            cancelEdit={cancelEdit}
             activeDayId={activeDayId}
             setActiveDayId={setActiveDayId}
           />

@@ -34,6 +34,7 @@ export interface NewPlanFormProps {
 }
 
 export interface MealForm {
+  id?: string; // Add id to track if we are editing
   name: string;
   description: string;
   time: string;
@@ -47,9 +48,11 @@ export interface AddMealFormProps {
   mealForm: MealForm;
   setMealForm: React.Dispatch<React.SetStateAction<MealForm>>;
   handleAddMeal: () => void;
+  handleUpdateMeal: () => void;
   handleCancel: () => void;
   fetchMacros: (mealName: string) => void;
-  fetchMacrosLoading: Boolean
+  fetchMacrosLoading: Boolean;
+  isEditing: boolean;
 }
 
 
