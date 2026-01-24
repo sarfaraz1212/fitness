@@ -111,6 +111,7 @@ export const trainerResolvers = {
             const action = new CreateMealAction();
 
             const actionReponse = await action.execute({
+                userId: context.currentUser._id,
                 dietId: args.dietId,
                 input: args.input
             });
@@ -121,6 +122,7 @@ export const trainerResolvers = {
             const action = new EditMealAction();
 
             const actionResponse = await action.execute({
+                userId: context.currentUser._id,
                 dietId: args.dietId,
                 mealId: args.mealId,
                 input: args.input
@@ -141,7 +143,7 @@ export const trainerResolvers = {
 
             const { dietId, mealId } = args;
 
-            return action.execute({ dietId, mealId });
+            return action.execute({ userId: context.currentUser._id, dietId, mealId });
         },
         createWorkout: async (_: any, args: any, context: any) => {
             const { name, description } = args.input;

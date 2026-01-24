@@ -8,11 +8,11 @@ export class DietRepository {
     }
 
     static async getByTrainer(addedBy: string) {
-        return Diet.find({ addedBy });
+        return Diet.find({ addedBy }).populate('meals');
     }
 
     static async find(dietId: string) {
-        return Diet.findById(dietId);
+        return Diet.findById(dietId).populate('meals');
     }
 
     static async getPaginated(
@@ -46,6 +46,7 @@ export class DietRepository {
 
         const [diets, total] = await Promise.all([
             Diet.find(query)
+                .populate('meals')
                 .skip(skip)
                 .limit(limit)
                 .sort(sort),
@@ -182,6 +183,21 @@ export class DietRepository {
         return diet;
     }
 
+    static async addMealToDiet(dietId: string, mealId: Types.ObjectId): Promise<IDiet | null> {
+        return Diet.findByIdAndUpdate(
+            dietId,
+            { $push: { meals: mealId } },
+            { new: true }
+        );
+    }
+
+    static async removeMealFromDiet(dietId: string, mealId: string): Promise<IDiet | null> {
+        return Diet.findByIdAndUpdate(
+            dietId,
+            { $pull: { meals: mealId } },
+            { new: true }
+        );
+    }
 
 }
 

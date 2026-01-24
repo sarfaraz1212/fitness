@@ -170,7 +170,7 @@ const TrainerDashboard = () => {
               description: "Manage nutrition plans",
               icon: Utensils,
               color: "from-amber-500 to-orange-600",
-              path: "/trainer/diet-plans",
+              path: "/trainer/diet-plan-builder",
             },
           ].map((item, index) => (
             <Card

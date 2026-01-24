@@ -261,6 +261,28 @@ export class TrainerSeeder {
         console.log(`✅ Created diet plan: ${planData.name} with ${planData.meals.length} meals`);
       }
 
+      const existingClients = await User.find({ assigned_trainer: trainer._id, role: 'CLIENT' });
+      
+      if (existingClients.length > 0) {
+        console.log(`✅ ${existingClients.length} clients already exist for this trainer. Skipping...`);
+      } else {
+        // Create 20 clients
+        for (let i = 1; i <= 20; i++) {
+          const client = new User({
+            name: `Client ${i}`,
+            email: `client${i}@example.com`,
+            password: 'password',
+            role: 'CLIENT',
+            is_verified: true,
+            is_onboarded: true,
+            assigned_trainer: trainer._id,
+          });
+          await client.save();
+          console.log(`✅ Created client: ${client.name} (${client.email})`);
+        }
+        console.log('✅ Created 20 clients for the trainer');
+      }
+
       console.log('✅ Trainer Seeder completed successfully!');
     } catch (error) {
       console.error('❌ Error in TrainerSeeder:', error);

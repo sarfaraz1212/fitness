@@ -6,10 +6,15 @@ import { CREATE_MEAL_MUTATION, DELETE_MEAL, EDIT_MEAL_MUTATION } from "@/graphql
 import { GET_MACROS_QUERY } from "@/graphql/queries";
 import { client } from "@/lib/apollo";
 import type { Meal, GetMacrosResponse, GetMacrosVariables, DeleteMealVariables } from "../types";
+import { useAuthStore } from "@/stores/authStore";
+
 
 export const useMeals = () => {
   const { toast } = useToast();
 
+
+  const user = useAuthStore(state => state.user);
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const [mealForm, setMealForm] = useState({ name: "", description: "", time: "", calories: "", protein: "", carbs: "", fats: "" });
   const [editMeal, setEditMeal] = useState<null | { isOpen: boolean; meal: Meal & { _id: string }; planId: string; originalName: string }>(null);
   const [deleteMealConfirm, setDeleteMealConfirm] = useState<null | { isOpen: boolean; planId: string; mealId: string; name: string }>(null);
@@ -63,6 +68,7 @@ export const useMeals = () => {
     if (!mealForm.name.trim()) return toast({ title: "Error", description: "Meal name is required", variant: "destructive" });
 
     const newMealInput = {
+      addedBy: isAuthenticated && user ? user._id : "",
       name: mealForm.name.trim(),
       description: mealForm.description.trim(),
       time: mealForm.time,
@@ -73,7 +79,10 @@ export const useMeals = () => {
     };
 
     try {
-      const { data } = await createMealMutation({ variables: { dietId: planId, input: newMealInput } });
+      const { data } = await createMealMutation(
+        { variables: {input: newMealInput, dietId: planId } 
+      });
+
       const newMeal = { id: data.createMeal._id, ...newMealInput };
       setDietPlans(prev => prev.map(plan => (plan.id === planId ? { ...plan, meals: [...plan.meals, newMeal] } : plan)));
       setMealForm({ name: "", description: "", time: "", calories: "", protein: "", carbs: "", fats: "" });

@@ -42,8 +42,8 @@ export const CREATE_DIET_MUTATION = gql`
 `;
 
 export const CREATE_MEAL_MUTATION = gql`
-  mutation CreateMeal($dietId: String!, $input: MealInput!) {
-    createMeal(dietId: $dietId, input: $input) {
+  mutation CreateMeal($input: MealInput!, $dietId: String!) {
+    createMeal(input: $input, dietId: $dietId) {
       _id
       name
       description

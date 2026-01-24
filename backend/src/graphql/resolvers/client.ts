@@ -12,11 +12,7 @@ export const clientResolvers = {
     remindWeightIn: async (_: any, { minutesFromNow }: { minutesFromNow: number }, context: any): Promise<boolean> => {
     
 
-   await reminderQueue.add(
-  'daily-weight-in-reminder',
-  { userId: 123 },
-  { delay: 10000 } // 10 seconds for quick test
-);
+
 
 
       return true;

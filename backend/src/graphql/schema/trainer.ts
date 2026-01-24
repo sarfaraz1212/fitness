@@ -11,6 +11,7 @@ export const trainerTypeDefs = gql`
     protein: Float!
     carbs: Float!
     fats: Float!
+    addedBy: ID!
   }
 
   type Exercise {
@@ -150,7 +151,7 @@ export const trainerTypeDefs = gql`
     createDiet(input: CreateDietInput!): Diet!
     editDiet(dietId: String!, input: EditDietInput!): Diet!
     deleteDiet(dietId:String!): ID!
-    createMeal(dietId:String! ,input: MealInput!): Meal!
+    createMeal(input: MealInput!, dietId: String!): Meal!
     editMeal(dietId: String!, mealId: String!, input: MealInput!): Meal!
     deleteMeal(dietId: String!, mealId: String!): DeleteMealResponse!
     createWorkout(input: CreateWorkoutInput!): Workout!

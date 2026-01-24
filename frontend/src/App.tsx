@@ -17,6 +17,7 @@ import ClientCreate from "./pages/trainer/client/Create";
 import ClientView from "./pages/trainer/client/View";
 import DietView from "./pages/trainer/diet/Index";
 import WorkoutView from "./pages/trainer/workout/Index";
+import DietPlanBuilder from "./pages/trainer/diet/Builder";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +37,7 @@ const App = () => (
             <Route path="/trainer" element={<ProtectedRoute><TrainerDashboard /></ProtectedRoute>} />
 
             <Route path="/trainer/clients" element={<ProtectedRoute><ClientIndex /></ProtectedRoute>} />
-            <Route path="/trainer/diet-plans" element={<ProtectedRoute><DietView /></ProtectedRoute>} />
+            <Route path="/trainer/diet-plan-builder" element={<ProtectedRoute><DietPlanBuilder /></ProtectedRoute>} />
             <Route path="/trainer/workout-plans" element={<ProtectedRoute><WorkoutView /></ProtectedRoute>} />
             <Route path="/trainer/clients/new" element={<ProtectedRoute><ClientCreate /></ProtectedRoute>} />
             <Route path="/trainer/clients/:id" element={<ClientView />} />
