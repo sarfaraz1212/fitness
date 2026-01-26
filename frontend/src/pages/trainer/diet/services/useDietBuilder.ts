@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { client } from "@/lib/apollo";
 import { GET_MACROS_QUERY } from "@/graphql/queries";
+import { CREATE_DIET_PLAN_MUTATION } from "@/graphql/mutations";
 import type {
     Meal,
     Client,
@@ -263,31 +264,66 @@ export const useDietBuilder = () => {
     const otherDays = (currentDayId: string) =>
         dayConfigs.filter((d) => d.dayId !== currentDayId && d.meals.length > 0);
 
-    const savePlan = (assignNow: boolean = false) => {
-        console.log(dayConfigs);
-        const emptyDays = dayConfigs.filter((d) => d.meals.length === 0);
-        if (emptyDays.length > 0) {
+    const savePlan = async (assignNow: boolean = false) => {
+
+        try {
+            const emptyDays = dayConfigs.filter((d) => d.meals.length === 0);
+
+            if (emptyDays.length > 0) {
+                toast({
+                    title: "Incomplete plan",
+                    description: `Add meals to: ${emptyDays.map((d) => d.dayLabel).join(", ")}`,
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            const sanitizedDays = dayConfigs.map(({ dayId, dayLabel, meals }) => ({
+                dayId,
+                dayLabel,
+                meals: meals.map(({ name, description, time, calories, protein, carbs, fats }) => ({
+                    name,
+                    description,
+                    time,
+                    calories,
+                    protein,
+                    carbs,
+                    fats
+                })),
+            }));
+
+
+            const createPlanPayload = {
+                clientId: selectedClient?.id,
+                planName: planName,
+                days: sanitizedDays,
+                assignNow,
+            };
+
+            const {data,error} = await client.mutate({
+                mutation: CREATE_DIET_PLAN_MUTATION,
+                variables: { input: createPlanPayload },
+            });
+
+            if(error){
+                throw new Error("Failed to create diet plan");
+            }
+
             toast({
-                title: "Incomplete plan",
-                description: `Add meals to: ${emptyDays.map((d) => d.dayLabel).join(", ")}`,
+                title: assignNow ? "Plan created & assigned!" : "Plan created!",
+                description: `Diet plan "${planName}" ${assignNow ? "assigned to" : "created for"} ${selectedClient?.name}`,
+            });
+
+            navigate("/create/diet");
+        } catch (error) {
+            console.error("Error saving diet plan:", error);
+            toast({
+                title: "Error",
+                description: "Failed to save diet plan",
                 variant: "destructive",
             });
-            return;
         }
-
-        console.log("Saving plan:", {
-            client: selectedClient,
-            planName,
-            assignNow,
-            days: dayConfigs,
-        });
-
-        toast({
-            title: assignNow ? "Plan created & assigned!" : "Plan created!",
-            description: `Diet plan "${planName}" ${assignNow ? "assigned to" : "created for"} ${selectedClient?.name}`,
-        });
-
-        navigate("/create/diet");
+     
     };
 
     const resetBuilder = () => {

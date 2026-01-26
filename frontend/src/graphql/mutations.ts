@@ -195,3 +195,10 @@ export const UNASSIGN_DIET_MUTATION = gql`
 `;
 
 
+export const CREATE_DIET_PLAN_MUTATION = gql`
+  mutation CreateDietPlan($input: CreateDietInput!) {
+    createDiet(input: $input) {  
+      _id
+    }
+  }
+`; 

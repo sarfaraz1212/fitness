@@ -26,9 +26,12 @@ export class GetMarcosAction implements ActionInterface {
                 contents: prompt,
             });
 
+            console.log(response.text); 
+
             try {
                 const json = JSON.parse(response.text);
 
+              
                 return {
                     name,
                     calories: json.calories,
