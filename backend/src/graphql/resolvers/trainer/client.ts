@@ -1,8 +1,9 @@
 import { GetClientsAction } from '../../../actions/trainer/GetClientsAction';
+import { requireTrainer } from './requireTrainer';
 
 export const trainerClientResolvers = {
   Query: {
-    getClients: async (_: any, args: any, context: any): Promise<any> => {
+    getClients: requireTrainer(async (_: any, args: any, context: any) => {
       const { page, limit, search, onboardingFilter } = args.input;
       const action = new GetClientsAction();
       return await action.execute({
@@ -12,6 +13,6 @@ export const trainerClientResolvers = {
         search,
         onboardingFilter
       });
-    },
+    }),
   },
 };

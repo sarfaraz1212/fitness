@@ -5,10 +5,11 @@ import { DeleteWorkoutAction } from '../../../actions/trainer/DeleteWorkoutActio
 import { AddExerciseAction } from '../../../actions/trainer/AddExerciseAction';
 import { UpdateExerciseAction } from '../../../actions/trainer/UpdateExerciseAction';
 import { DeleteExerciseAction } from '../../../actions/trainer/DeleteExerciseAction';
+import { requireTrainer } from './requireTrainer';
 
 export const trainerWorkoutResolvers = {
   Query: {
-    getWorkouts: async (_: any, args: any, context: any): Promise<any> => {
+    getWorkouts: requireTrainer(async (_: any, args: any, context: any): Promise<any> => {
       const { page, limit, search } = args.input || {};
       const action = new GetWorkoutsAction();
       return await action.execute({
@@ -17,10 +18,10 @@ export const trainerWorkoutResolvers = {
         limit,
         search
       });
-    },
+    }),
   },
   Mutation: {
-    createWorkout: async (_: any, args: any, context: any) => {
+    createWorkout: requireTrainer(async (_: any, args: any, context: any) => {
       const { name, description } = args.input;
       const action = new CreateWorkoutAction();
       return await action.execute({
@@ -28,39 +29,39 @@ export const trainerWorkoutResolvers = {
         description,
         addedBy: context.currentUser._id
       });
-    },
-    updateWorkout: async (_: any, args: any, context: any) => {
+    }),
+    updateWorkout: requireTrainer(async (_: any, args: any, context: any) => {
       const action = new UpdateWorkoutAction();
       return await action.execute({
         workoutId: args.workoutId,
         input: args.input
       });
-    },
-    deleteWorkout: async (_: any, args: any, context: any) => {
+    }),
+    deleteWorkout: requireTrainer(async (_: any, args: any, context: any) => {
       const action = new DeleteWorkoutAction();
       return await action.execute({ workoutId: args.workoutId });
-    },
-    addExercise: async (_: any, args: any, context: any) => {
+    }),
+    addExercise: requireTrainer(async (_: any, args: any, context: any) => {
       const action = new AddExerciseAction();
       return await action.execute({
         workoutId: args.workoutId,
         input: args.input
       });
-    },
-    updateExercise: async (_: any, args: any, context: any) => {
+    }),
+    updateExercise: requireTrainer(async (_: any, args: any, context: any) => {
       const action = new UpdateExerciseAction();
       return await action.execute({
         workoutId: args.workoutId,
         exerciseId: args.exerciseId,
         input: args.input
       });
-    },
-    deleteExercise: async (_: any, args: any, context: any) => {
+    }),
+    deleteExercise: requireTrainer(async (_: any, args: any, context: any) => {
       const action = new DeleteExerciseAction();
       return await action.execute({
         workoutId: args.workoutId,
         exerciseId: args.exerciseId
       });
-    },
+    }),
   },
 };
