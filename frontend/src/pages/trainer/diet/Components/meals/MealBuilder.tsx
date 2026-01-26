@@ -13,6 +13,8 @@ import ClientBuilderProfileCard from "@/components/builder/ClientProfileCard";
 import MealCard from "./MealCard";
 import PlanStats from "../plans/PlanStats";
 import AddMealForm from "./AddMealForm";
+import MealMacrosModal from "./MealMacrosModal";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 import type { Client, Meal, DayConfig, MealForm, BuilderStep } from "../../types";
 import SaveConfirmationModal from "@/components/builder/SaveConfirmationModal";
 
@@ -61,6 +63,11 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
 }) => {
   const [openDayId, setOpenDayId] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [showMacrosModal, setShowMacrosModal] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; meal: Meal | null; dayId: string | null }>(
+    { open: false, meal: null, dayId: null }
+  );
 
   const toggleDayConfig = (dayId: string) => {
     setOpenDayId((prev) => (prev === dayId ? null : dayId));
@@ -159,8 +166,12 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
                         key={meal.id}
                         meal={meal}
                         planId={dayConfig.dayId}
-                        onRemove={() => removeMeal(dayConfig.dayId, meal.id)}
+                        onRemove={() => setDeleteModal({ open: true, meal, dayId: dayConfig.dayId })}
                         openEditMeal={openEditMeal}
+                        onViewMeal={() => {
+                          setSelectedMeal(meal);
+                          setShowMacrosModal(true);
+                        }}
                       />
                     ))}
                   </div>
@@ -212,6 +223,29 @@ const MealBuilder: React.FC<MealBuilderProps> = ({
         onConfirm={savePlan}
         title="Assign Diet Plan?"
         clientName={selectedClient.name}
+      />
+
+      <MealMacrosModal
+        open={showMacrosModal}
+        onOpenChange={setShowMacrosModal}
+        dayName={(() => {
+          const currentDay = dayConfigs.find(d => d.dayId === activeDayId);
+          return currentDay ? currentDay.dayLabel : "";
+        })()}
+        meal={selectedMeal}
+      />
+
+      <DeleteConfirmModal
+        open={deleteModal.open}
+        onOpenChange={(open) => setDeleteModal((prev) => ({ ...prev, open }))}
+        mealName={deleteModal.meal?.name}
+        onCancel={() => setDeleteModal({ open: false, meal: null, dayId: null })}
+        onConfirm={() => {
+          if (deleteModal.meal && deleteModal.dayId) {
+            removeMeal(deleteModal.dayId, deleteModal.meal.id);
+          }
+          setDeleteModal({ open: false, meal: null, dayId: null });
+        }}
       />
     </div>
   );

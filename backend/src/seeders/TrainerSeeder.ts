@@ -28,7 +28,7 @@ export class TrainerSeeder {
         console.log('✅ Trainer created:', trainer.email);
       }
 
-      const existingDiets = await Diet.find({ addedBy: trainer._id });
+      const existingDiets = await Diet.find({ assignedBy: trainer._id });
       
       if (existingDiets.length > 0) {
         console.log(`✅ ${existingDiets.length} diet plans already exist for this trainer. Skipping...`);
@@ -252,7 +252,7 @@ export class TrainerSeeder {
       // Create diet plans
       for (const planData of mealPlans) {
         const diet = new Diet({
-          addedBy: trainer._id,
+          assignedBy: trainer._id,
           name: planData.name,
           description: planData.description,
           meals: planData.meals,

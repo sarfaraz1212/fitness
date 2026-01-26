@@ -1,5 +1,5 @@
 import React from "react";
-import { Clock, Flame, Dumbbell, Wheat, Droplet, Pencil, Trash2 } from "lucide-react";
+import { Clock, Flame, Dumbbell, Wheat, Droplet, Pencil, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Meal } from "../../types";
 
@@ -9,6 +9,7 @@ interface MealCardProps {
   openEditMeal?: (planId: string, meal: Meal) => void;
   openDeleteConfirm?: (planId: string, mealId: string, name: string) => void;
   onRemove?: () => void;
+  onViewMeal?: (meal: Meal) => void;
 }
 
 const MealCard: React.FC<MealCardProps> = ({
@@ -16,7 +17,8 @@ const MealCard: React.FC<MealCardProps> = ({
   planId,
   openEditMeal,
   openDeleteConfirm,
-  onRemove
+  onRemove,
+  onViewMeal
 }) => {
   return (
     <div className="p-3 rounded-xl bg-muted/30 border border-border/50 flex items-start justify-between gap-3 group hover:bg-muted/50 transition-colors">
@@ -55,7 +57,18 @@ const MealCard: React.FC<MealCardProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1 shrink-0">
+        {onViewMeal && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10"
+            onClick={() => onViewMeal(meal)}
+            aria-label="View Meal"
+          >
+            <Eye className="w-3.5 h-3.5" />
+          </Button>
+        )}
         {openEditMeal && planId && (
           <Button
             variant="ghost"
