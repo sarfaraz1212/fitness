@@ -67,6 +67,18 @@ export const useMeals = () => {
   const handleAddMeal = async (planId: string, dietPlans: any, setDietPlans: any) => {
     if (!mealForm.name.trim()) return toast({ title: "Error", description: "Meal name is required", variant: "destructive" });
 
+    const requiredFields = [
+      'name', 'time', 'calories', 'protein', 'carbs', 'fats'
+    ];
+    const missingField = requiredFields.find(field => !mealForm[field]?.toString().trim());
+    if (missingField) {
+      return toast({
+        title: 'Error',
+        description: `${missingField.charAt(0).toUpperCase() + missingField.slice(1)} is required`,
+        variant: 'destructive',
+      });
+    }
+
     const newMealInput = {
       addedBy: isAuthenticated && user ? user._id : "",
       name: mealForm.name.trim(),

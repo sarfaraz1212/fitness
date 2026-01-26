@@ -54,12 +54,6 @@ export const trainerResolvers = {
             return actionResponse;
         },
 
-        getMacros: async (_: any, args: any, context: any): Promise<any> => {
-
-            const action = new GetMarcosAction();
-
-            return await action.execute({ name: args.name });
-        },
 
         getWorkouts: async (_: any, args: any, context: any): Promise<any> => {
             const { page, limit, search } = args.input || {};

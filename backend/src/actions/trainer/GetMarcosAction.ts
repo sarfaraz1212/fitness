@@ -30,8 +30,6 @@ export class GetMarcosAction implements ActionInterface {
                 Food: ${name}
                 `;
 
-
-
             const response = await ai.models.generateContent({
                 model: "gemini-3-flash-preview",
                 contents: prompt,
@@ -55,8 +53,25 @@ export class GetMarcosAction implements ActionInterface {
                 console.error("Failed to parse JSON from Gemini:", response.text);
                 throw err;
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error in GetMarcosAction:", error);
+            // If quota exceeded, return static values
+            if (
+                error?.message &&
+                error.message.includes('quota') ||
+                error.message.includes('RESOURCE_EXHAUSTED') ||
+                error.message.includes('429')
+            ) {
+                return {
+                    name,
+                    calories: 0,
+                    protein: 0,
+                    carbs: 0,
+                    fats: 0,
+                    vitamins: [],
+                    minerals: [],
+                };
+            }
             throw error;
         }
     }

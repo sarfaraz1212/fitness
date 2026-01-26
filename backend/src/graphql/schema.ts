@@ -1,7 +1,14 @@
 import { mergeTypeDefs } from '@graphql-tools/merge';
-import { userTypeDefs } from './schema/user';
-import { onboardingTypeDefs } from './schema/onboarding';
-import { trainerTypeDefs } from './schema/trainer';
-import { clientTypeDefs } from "./schema/client";
+import { onboardingTypeDefs } from './schema/client/onboarding';
+import { userTypeDefs } from './schema/admin/admin';
+import { dietTypeDefs } from './schema/trainer/diet';
+import { workoutTypeDefs } from './schema/trainer/workout';
+import { clientTypeDefs } from './schema/trainer/client';
 
-export const typeDefs = mergeTypeDefs([userTypeDefs, onboardingTypeDefs, trainerTypeDefs, clientTypeDefs]); 
+export const typeDefs = mergeTypeDefs([
+	userTypeDefs,
+	onboardingTypeDefs,
+	dietTypeDefs,
+	workoutTypeDefs,
+	clientTypeDefs
+]);

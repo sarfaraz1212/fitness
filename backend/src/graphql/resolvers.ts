@@ -1,12 +1,16 @@
-import { userResolvers } from './resolvers/user';
-import { onboardingResolvers } from './resolvers/onboarding';
+import { adminResolvers } from './resolvers/admin/admin';
+import { trainerClientResolvers } from './resolvers/trainer/client';
+import { trainerDietResolvers } from './resolvers/trainer/diet';
+import { trainerMealResolvers } from './resolvers/trainer/meal';
+import { trainerWorkoutResolvers } from './resolvers/trainer/workout';
+import { clientOnboardingResolvers } from './resolvers/client/onboarding';
 import { mergeResolvers } from '@graphql-tools/merge';
-import { trainerResolvers } from './resolvers/trainer';
-import {clientResolvers} from "./resolvers/client";
 
 export const resolvers = mergeResolvers([
-  userResolvers,
-  onboardingResolvers,
-  trainerResolvers,
-  clientResolvers,
+  adminResolvers,
+  trainerClientResolvers,
+  trainerDietResolvers,
+  trainerMealResolvers,
+  trainerWorkoutResolvers,
+  clientOnboardingResolvers,
 ]);

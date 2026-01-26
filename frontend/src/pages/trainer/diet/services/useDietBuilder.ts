@@ -345,7 +345,7 @@ export const useDietBuilder = () => {
                 description: `Diet plan "${planName}" ${assignNow ? "assigned to" : "created for"} ${selectedClient?.name}`,
             });
 
-            navigate("/create/diet");
+            navigate("/trainer");
         } catch (error) {
             console.error("Error saving diet plan:", error);
             toast({
