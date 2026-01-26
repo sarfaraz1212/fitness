@@ -3,6 +3,21 @@ import { gql } from "graphql-tag";
 export const trainerTypeDefs = gql`
   """
   =====================
+  NUTRIENT
+  =====================
+  """
+  type Nutrient {
+    name: String!
+    amount: String!
+  }
+
+  input NutrientInput {
+    name: String!
+    amount: String!
+  }
+
+  """
+  =====================
   MEAL
   =====================
   """
@@ -15,7 +30,8 @@ export const trainerTypeDefs = gql`
     protein: Float!
     carbs: Float!
     fats: Float!
-    addedBy: ID!
+    vitamins: [Nutrient!]!
+    minerals: [Nutrient!]!
     createdAt: String!
     updatedAt: String!
   }
@@ -28,6 +44,8 @@ export const trainerTypeDefs = gql`
     protein: Float!
     carbs: Float!
     fats: Float!
+    vitamins: [NutrientInput!]!
+    minerals: [NutrientInput!]!
   }
 
   """
@@ -54,7 +72,6 @@ export const trainerTypeDefs = gql`
   """
   type Diet {
     _id: ID!
-    addedBy: ID!
     client: ID
     name: String!
     description: String
@@ -179,6 +196,8 @@ export const trainerTypeDefs = gql`
     protein: Float!
     carbs: Float!
     fats: Float!
+    vitamins: [Nutrient!]!
+    minerals: [Nutrient!]!
   }
 
   type DeleteMealResponse {

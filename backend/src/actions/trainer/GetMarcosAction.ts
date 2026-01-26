@@ -9,17 +9,28 @@ export class GetMarcosAction implements ActionInterface {
             });
 
             const prompt = `
-                            You are a nutrition assistant.
-                            Given the food and portion size below, return ONLY valid JSON (no extra text) with these keys:
-                            {
-                            "calories": number,
-                            "protein": number,
-                            "carbs": number,
-                            "fats": number
-                            }
+                You are a nutrition assistant. 
+                Given the food and portion size below, return ONLY valid JSON (no extra text) with the following structure:
 
-                            Food: ${name}
-                        `;
+                {
+                "calories": number,
+                "protein": number,
+                "carbs": number,
+                "fats": number,
+                "vitamins": [
+                    {"name": string, "amount": string}
+                ],
+                "minerals": [
+                    {"name": string, "amount": string}
+                ]
+                }
+
+                Include the most relevant vitamins and minerals with their typical amounts per the given portion. 
+
+                Food: ${name}
+                `;
+
+
 
             const response = await ai.models.generateContent({
                 model: "gemini-3-flash-preview",
@@ -31,13 +42,14 @@ export class GetMarcosAction implements ActionInterface {
             try {
                 const json = JSON.parse(response.text);
 
-              
                 return {
                     name,
                     calories: json.calories,
                     protein: json.protein,
                     carbs: json.carbs,
                     fats: json.fats,
+                    vitamins: json.vitamins,
+                    minerals: json.minerals,
                 };
             } catch (err) {
                 console.error("Failed to parse JSON from Gemini:", response.text);

@@ -52,6 +52,14 @@ export const GET_MACROS_QUERY = gql`
       protein
       carbs
       fats
+      vitamins {
+        name
+        amount
+      }
+      minerals {
+        name
+        amount
+      }
     }
   }
 `;

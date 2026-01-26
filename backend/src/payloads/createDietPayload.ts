@@ -1,3 +1,9 @@
+// Nutrient
+export interface Nutrient {
+    name: string;
+    amount: string; // e.g., "14.8 mg" or "2.4 µg"
+}
+
 // Client / User
 export interface Onboarding {
     fitness_goals: string[];
@@ -21,6 +27,8 @@ export interface Meal {
     protein: number;
     carbs: number;
     fats: number;
+    vitamins: Nutrient[];
+    minerals: Nutrient[];
 }
 
 // Day (NO isOpen)

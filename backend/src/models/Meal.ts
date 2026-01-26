@@ -1,5 +1,10 @@
 import { Schema, model, Types } from 'mongoose';
 
+export interface INutrient {
+  name: string;
+  amount: string;
+}
+
 export interface IMeal {
   _id: Types.ObjectId;
   name: string;
@@ -9,8 +14,17 @@ export interface IMeal {
   protein: number;
   carbs: number;
   fats: number;
-  addedBy: Types.ObjectId;
+  vitamins: INutrient[];
+  minerals: INutrient[];
 }
+
+const NutrientSchema = new Schema<INutrient>(
+  {
+    name: { type: String, required: true },
+    amount: { type: String, required: true }, // e.g., "14.8 mg"
+  },
+  { _id: false } // optional: prevent creating separate _id for each nutrient
+);
 
 const MealSchema = new Schema<IMeal>(
   {
@@ -55,10 +69,16 @@ const MealSchema = new Schema<IMeal>(
       min: 0,
     },
 
-    addedBy: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-    }
+    vitamins: {
+      type: [NutrientSchema],
+      default: [],
+    },
+
+    minerals: {
+      type: [NutrientSchema],
+      default: [],
+    },
+
   },
   {
     timestamps: true,

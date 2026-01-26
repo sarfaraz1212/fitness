@@ -52,6 +52,8 @@ export const useDietBuilder = () => {
         protein: "",
         carbs: "",
         fats: "",
+        vitamins: [], 
+        minerals: [],
     });
     const [fetchMacrosLoading, setFetchMacrosLoading] = useState(false);
 
@@ -70,6 +72,8 @@ export const useDietBuilder = () => {
                     protein: data.getMacros.protein.toString(),
                     carbs: data.getMacros.carbs.toString(),
                     fats: data.getMacros.fats.toString(),
+                    vitamins: data.getMacros.vitamins,
+                    minerals: data.getMacros.minerals,
                 }));
                 toast({ title: "Macros fetched!", description: `Nutritional data for ${mealName} updated.` });
             }
@@ -110,7 +114,8 @@ export const useDietBuilder = () => {
             toast({ title: "Error", description: "Meal name is required", variant: "destructive" });
             return;
         }
-
+        
+        console.log(mealForm.vitamins, mealForm.minerals);
         const newMeal: Meal = {
             id: `m${Date.now()}`,
             name: mealForm.name.trim(),
@@ -120,6 +125,8 @@ export const useDietBuilder = () => {
             protein: Number(mealForm.protein) || 0,
             carbs: Number(mealForm.carbs) || 0,
             fats: Number(mealForm.fats) || 0,
+            vitamins: mealForm.vitamins,
+            minerals: mealForm.minerals,
         };
 
         setDayConfigs((prev) =>
@@ -137,6 +144,8 @@ export const useDietBuilder = () => {
             protein: "",
             carbs: "",
             fats: "",
+            MealForm: [],
+            minerals: [],
         });
         setActiveDayId(null);
         toast({ title: "Meal added", description: `${newMeal.name} added to the day` });
@@ -172,6 +181,8 @@ export const useDietBuilder = () => {
             protein: Number(mealForm.protein) || 0,
             carbs: Number(mealForm.carbs) || 0,
             fats: Number(mealForm.fats) || 0,
+            vitamins: mealForm.vitamins,
+            minerals: mealForm.minerals,
         };
 
         setDayConfigs((prev) =>
@@ -194,6 +205,8 @@ export const useDietBuilder = () => {
             protein: "",
             carbs: "",
             fats: "",
+            vitamins: [],
+            minerals: [],
         });
         setActiveDayId(null);
         toast({ title: "Meal updated", description: `${updatedMeal.name} has been updated` });
@@ -208,6 +221,8 @@ export const useDietBuilder = () => {
             protein: "",
             carbs: "",
             fats: "",
+            vitamins: [],
+            minerals: [],
         });
         setActiveDayId(null);
     };
@@ -278,20 +293,36 @@ export const useDietBuilder = () => {
                 return;
             }
 
-            const sanitizedDays = dayConfigs.map(({ dayId, dayLabel, meals }) => ({
+            console.log("dayConfigs:", dayConfigs);
+
+
+           const sanitizedDays = dayConfigs.map(({ dayId, dayLabel, meals }) => ({
                 dayId,
                 dayLabel,
-                meals: meals.map(({ name, description, time, calories, protein, carbs, fats }) => ({
+                meals: meals.map(
+                    ({
                     name,
                     description,
                     time,
                     calories,
                     protein,
                     carbs,
-                    fats
-                })),
+                    fats,
+                    vitamins,
+                    minerals,
+                    }) => ({
+                    name,
+                    description,
+                    time,
+                    calories,
+                    protein,
+                    carbs,
+                    fats,
+                    vitamins: (vitamins ?? []).map(({ __typename, ...rest }) => rest),
+                    minerals: (minerals ?? []).map(({ __typename, ...rest }) => rest),
+                    })
+                ),
             }));
-
 
             const createPlanPayload = {
                 clientId: selectedClient?.id,

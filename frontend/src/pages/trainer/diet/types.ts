@@ -1,3 +1,8 @@
+export interface Nutrient {
+  name: string;
+  amount: string;
+}
+
 export interface Meal {
   id: string;
   name: string;
@@ -7,6 +12,8 @@ export interface Meal {
   protein: number;
   carbs: number;
   fats: number;
+  vitamins: Nutrient[];
+  minerals: Nutrient[];
 }
 
 export interface DietPlan {
@@ -42,6 +49,8 @@ export interface MealForm {
   protein: string;
   carbs: string;
   fats: string;
+  vitamins: Nutrient[];
+  minerals: Nutrient[];
 }
 
 export interface AddMealFormProps {
