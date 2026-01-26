@@ -22,11 +22,12 @@ export const trainerWorkoutResolvers = {
   },
   Mutation: {
     createWorkout: requireTrainer(async (_: any, args: any, context: any) => {
-      const { name, description } = args.input;
+      const { name, description, exercises } = args.input;
       const action = new CreateWorkoutAction();
       return await action.execute({
         name,
         description,
+        exercises,
         addedBy: context.currentUser._id
       });
     }),

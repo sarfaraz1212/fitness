@@ -1,13 +1,15 @@
 import Workout, { IWorkout } from '../models/Workout';
+import { ExerciseRepository } from './ExerciseRepository';
 
 export class WorkoutRepository {
     static async create(data: any): Promise<IWorkout> {
         const workout = new Workout(data);
-        return await workout.save();
+        await workout.save();
+        return await workout.populate('exercises');
     }
 
     static async getByTrainer(addedBy: string) {
-        return Workout.find({ addedBy }).sort({ createdAt: -1 });
+        return Workout.find({ addedBy }).sort({ createdAt: -1 }).populate('exercises');
     }
 
     static async getPaginated(
@@ -31,7 +33,8 @@ export class WorkoutRepository {
             Workout.find(query)
                 .skip(skip)
                 .limit(limit)
-                .sort({ createdAt: -1 }),
+                .sort({ createdAt: -1 })
+                .populate('exercises'),
             Workout.countDocuments(query)
         ]);
 
@@ -55,35 +58,30 @@ export class WorkoutRepository {
             workoutId,
             { name: input.name, description: input.description },
             { new: true }
-        );
+        ).populate('exercises');
     }
 
-    static async addExercise(workoutId: string, exercise: any): Promise<IWorkout | null> {
-        return await Workout.findByIdAndUpdate(
+    static async addExercise(workoutId: string, exerciseInput: any): Promise<IWorkout | null> {
+        const exercise = await ExerciseRepository.create(exerciseInput);
+        const workout = await Workout.findByIdAndUpdate(
             workoutId,
-            { $push: { exercises: exercise } },
+            { $push: { exercises: exercise._id } },
             { new: true }
-        );
+        ).populate('exercises');
+        return workout;
     }
 
     static async updateExercise(workoutId: string, exerciseId: string, input: any): Promise<IWorkout | null> {
-        const updateDoc: any = {};
-        for (const key in input) {
-            updateDoc[`exercises.$.${key}`] = input[key];
-        }
-
-        return await Workout.findOneAndUpdate(
-            { _id: workoutId, 'exercises._id': exerciseId },
-            { $set: updateDoc },
-            { new: true }
-        );
+        await ExerciseRepository.update(exerciseId, input);
+        return await Workout.findById(workoutId).populate('exercises');
     }
 
     static async deleteExercise(workoutId: string, exerciseId: string): Promise<IWorkout | null> {
+        await ExerciseRepository.delete(exerciseId);
         return await Workout.findByIdAndUpdate(
             workoutId,
-            { $pull: { exercises: { _id: exerciseId } } },
+            { $pull: { exercises: exerciseId } },
             { new: true }
-        );
+        ).populate('exercises');
     }
 }

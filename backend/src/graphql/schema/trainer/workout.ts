@@ -51,6 +51,7 @@ export const workoutTypeDefs = gql`
   input CreateWorkoutInput {
     name: String!
     description: String
+    exercises: [ExerciseInput!]
   }
 
   input ExerciseInput {

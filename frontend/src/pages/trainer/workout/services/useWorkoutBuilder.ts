@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@apollo/client/react";
+import { CREATE_WORKOUT_MUTATION } from "@/graphql/mutations";
 import type {
     Exercise,
     Client,
@@ -51,6 +53,8 @@ export const useWorkoutBuilder = () => {
         restTime: "",
         notes: "",
     });
+
+    const [createWorkout, { loading: savingPlan }] = useMutation(CREATE_WORKOUT_MUTATION);
 
     const proceedToExercises = (name: string, days: string[]) => {
         if (!name.trim()) {
@@ -182,7 +186,7 @@ export const useWorkoutBuilder = () => {
     const otherDays = (currentDayId: string) =>
         dayConfigs.filter((d) => d.dayId !== currentDayId && d.exercises.length > 0);
 
-    const savePlan = (assignNow: boolean = false) => {
+    const savePlan = async (assignNow: boolean = false) => {
         const emptyDays = dayConfigs.filter((d) => d.exercises.length === 0);
         if (emptyDays.length > 0) {
             toast({
@@ -193,20 +197,40 @@ export const useWorkoutBuilder = () => {
             return;
         }
 
-        console.log("Saving workout plan:", {
-            client: selectedClient,
-            planName,
-            weightUnit,
-            assignNow,
-            days: dayConfigs,
-        });
+        const allExercises = dayConfigs.flatMap((day) => day.exercises.map((ex) => ({
+            name: ex.name,
+            sets: ex.sets.length,
+            reps: Number(ex.sets[0]?.reps) || 0,
+            weight: Number(ex.sets[0]?.weight) || undefined,
+            duration: ex.duration || undefined,
+            restTime: ex.restTime || undefined,
+            notes: ex.notes || undefined,
+        })));
 
-        toast({
-            title: assignNow ? "Workout plan created & assigned!" : "Workout plan created!",
-            description: `Plan "${planName}" ${assignNow ? "assigned to" : "created for"} ${selectedClient?.name}`,
-        });
+        try {
+            await createWorkout({
+                variables: {
+                    input: {
+                        name: planName,
+                        description: `Workout plan for ${selectedClient?.name || "client"}`,
+                        exercises: allExercises,
+                    },
+                },
+            });
 
-        navigate("/create/workout");
+            toast({
+                title: assignNow ? "Workout plan created & saved!" : "Workout plan created!",
+                description: `Plan "${planName}" ${assignNow ? "saved" : "saved"} for ${selectedClient?.name || "client"}`,
+            });
+
+            // navigate("/trainer/workout-plans");
+        } catch (error: any) {
+            toast({
+                title: "Failed to save workout",
+                description: error?.message || "Please try again",
+                variant: "destructive",
+            });
+        }
     };
 
     const resetBuilder = () => {
@@ -246,6 +270,7 @@ export const useWorkoutBuilder = () => {
         copyExercisesToDay,
         otherDays,
         savePlan,
+        savingPlan,
         resetBuilder
     };
 };

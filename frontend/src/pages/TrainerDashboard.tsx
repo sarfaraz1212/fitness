@@ -296,6 +296,7 @@ const TrainerDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        
       </main>
     </div>
   );
