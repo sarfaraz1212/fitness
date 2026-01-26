@@ -19,7 +19,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("CLIENT");
+
 
   const [loginMutation, { loading }] = useMutation<LoginData>(LOGIN_MUTATION, {
     onCompleted: (data) => {
@@ -34,8 +34,12 @@ const Login = () => {
         navigate("/trainer");
         return;
       }
-
-      navigate("/dashboard");
+      if (data.login.user.role === "CLIENT") {
+        navigate("/client");
+        return;
+      }
+      // fallback
+      navigate("/");
     },
     onError: (error) => {
       toast({
@@ -53,7 +57,6 @@ const Login = () => {
         input: {
           email,
           password,
-          role,
         },
       },
     });
@@ -105,21 +108,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="role" className="text-sm font-medium">
-                Role
-              </Label>
-              <Select value={role} onValueChange={setRole}>
-                <SelectTrigger className="h-11 bg-background/50 border-muted-foreground/20 focus:border-emerald-500">
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CLIENT">Client</SelectItem>
-                  <SelectItem value="TRAINER">Trainer</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Role selection removed for auto role-based login */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium">
                 Password

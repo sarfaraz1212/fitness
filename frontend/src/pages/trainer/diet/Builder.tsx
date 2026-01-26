@@ -62,7 +62,7 @@ const Builder = () => {
         <div className="container max-w-2xl py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/create/diet">
+              <Link to="/trainer">
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <ArrowLeft className="w-5 h-5" />
                 </Button>

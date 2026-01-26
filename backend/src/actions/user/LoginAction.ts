@@ -13,8 +13,7 @@ export default class LoginAction implements ActionInterface {
 
     async execute(payload: object): Promise<any> {
         const validatedData = ValidationService.validate(this.schema, payload);
-        const { email, password, role } = validatedData;
-
-        return await LoginFactory.login(email, password, role);
+        const { email, password } = validatedData;
+        return await LoginFactory.login(email, password);
     }
 }

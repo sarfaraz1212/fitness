@@ -8,7 +8,7 @@ import { ApolloProvider } from "@apollo/client/react";
 import { client } from '@/lib/apollo';
 import CreateOnboarding from "./pages/client/onboarding/Create";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
+import ClientDashboard from "./pages/ClientDashboard";
 import TrainerDashboard from "./pages/TrainerDashboard";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -32,7 +32,7 @@ const App = () => (
               <Route path="/" element={<Login />} />
               <Route path="/login" element={<Login />} />
               <Route path="/onboarding" element={<CreateOnboarding />} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/client" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
               <Route path="/trainer" element={<ProtectedRoute><TrainerDashboard /></ProtectedRoute>} />
 
               <Route path="/trainer/clients" element={<ProtectedRoute><ClientIndex /></ProtectedRoute>} />

@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from '@/stores/authStore';
 
-const Dashboard = () => {
+const ClientDashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
 
@@ -284,4 +284,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default ClientDashboard;

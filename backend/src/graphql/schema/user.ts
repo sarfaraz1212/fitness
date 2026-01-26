@@ -40,7 +40,6 @@ export const userTypeDefs = gql`
   input LoginUserInput {
     email: String!
     password: String!
-    role: Role!
   }
 
   input CreateClientInput {

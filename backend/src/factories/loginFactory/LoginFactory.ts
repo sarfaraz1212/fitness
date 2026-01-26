@@ -5,14 +5,10 @@ import { ClientLogin } from './concrete/ClientLogin';
 import { LoginHandler } from '../../interfaces/LoginHandler';
 
 export class LoginFactory {
-    static async login(email: string, password: string, role: string): Promise<{ token: string; user: any }> {
+    static async login(email: string, password: string): Promise<{ token: string; user: any }> {
         const user = await User.findOne({ email });
         if (!user) {
             throw new Error('User not found');
-        }
-
-        if (user.role !== role) {
-            throw new Error('Role mismatch');
         }
 
         let handler: LoginHandler;
